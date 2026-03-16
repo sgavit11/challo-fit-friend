@@ -3,15 +3,16 @@ import { getDailyLog, updateDailyLog } from '../storage'
 import { todayKey } from '../lib/calculations'
 
 export const useDailyLog = (profileId) => {
-  const today = todayKey()
-  const [log, setLog] = useState(() => getDailyLog(profileId, today))
+  const [log, setLog] = useState(() => getDailyLog(profileId, todayKey()))
 
   const update = useCallback((updates) => {
+    const today = todayKey()
     updateDailyLog(profileId, today, updates)
     setLog(getDailyLog(profileId, today))
-  }, [profileId, today])
+  }, [profileId])
 
   const logMeal = useCallback((meal) => {
+    const today = todayKey()
     const current = getDailyLog(profileId, today)
     const updatedMeals = [...current.meals, meal]
     const updates = {
@@ -23,7 +24,7 @@ export const useDailyLog = (profileId) => {
     }
     updateDailyLog(profileId, today, updates)
     setLog(getDailyLog(profileId, today))
-  }, [profileId, today])
+  }, [profileId])
 
   return { log, update, logMeal }
 }
