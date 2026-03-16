@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion'
 import ProgressBar from './ProgressBar'
 
 const MACRO_META = {
@@ -10,7 +11,7 @@ const MACRO_META = {
 export default function MacroCard({ log, targets }) {
   return (
     <div className="card">
-      {['calories', 'protein', 'carbs', 'fat'].map(key => {
+      {['calories', 'protein', 'carbs', 'fat'].map((key, index) => {
         const meta = MACRO_META[key]
         const value = log[key] ?? 0
         const target = targets[key] ?? 0
@@ -19,14 +20,20 @@ export default function MacroCard({ log, targets }) {
           ? `${diff} ${meta.unit} left`
           : `${Math.abs(diff)} ${meta.unit} over`
         return (
-          <ProgressBar
+          <motion.div
             key={key}
-            value={value}
-            max={target}
-            color={meta.color}
-            label={meta.label}
-            sublabel={sublabel}
-          />
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.06, duration: 0.25, ease: 'easeOut' }}
+          >
+            <ProgressBar
+              value={value}
+              max={target}
+              color={meta.color}
+              label={meta.label}
+              sublabel={sublabel}
+            />
+          </motion.div>
         )
       })}
     </div>

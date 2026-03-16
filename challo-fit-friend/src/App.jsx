@@ -1,121 +1,79 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { AnimatePresence, motion } from 'framer-motion'
+import { useProfile } from './hooks/useProfile'
+import BottomNav from './components/BottomNav'
+import OnboardingFlow from './onboarding/OnboardingFlow'
+import ProfileSwitcher from './onboarding/ProfileSwitcher'
+import HomeScreen from './screens/HomeScreen'
+import FoodScreen from './screens/FoodScreen'
+import WaterScreen from './screens/WaterScreen'
+import ProgressScreen from './screens/ProgressScreen'
+import WorkoutScreen from './screens/WorkoutScreen'
+import SettingsScreen from './screens/SettingsScreen'
 
-function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+const pageVariants = {
+  initial: { x: '100%', opacity: 0 },
+  animate: { x: 0, opacity: 1, transition: { duration: 0.28, ease: 'easeInOut' } },
+  exit: { x: '-100%', opacity: 0, transition: { duration: 0.28, ease: 'easeInOut' } },
 }
 
-export default App
+export default function App() {
+  const { profiles, activeProfile, addOrUpdateProfile, removeProfile, switchProfile } = useProfile()
+  const [tab, setTab] = useState('home')
+  const [showSettings, setShowSettings] = useState(false)
+
+  if (profiles.length === 0) {
+    return (
+      <OnboardingFlow
+        onComplete={(profile) => { addOrUpdateProfile(profile); switchProfile(profile.id) }}
+      />
+    )
+  }
+
+  if (!activeProfile) {
+    return (
+      <ProfileSwitcher
+        profiles={profiles}
+        onSelect={switchProfile}
+        onAddComplete={(profile) => { addOrUpdateProfile(profile); switchProfile(profile.id) }}
+      />
+    )
+  }
+
+  if (showSettings) {
+    return (
+      <SettingsScreen
+        profile={activeProfile}
+        onUpdate={addOrUpdateProfile}
+        onBack={() => setShowSettings(false)}
+      />
+    )
+  }
+
+  const screenProps = { profile: activeProfile, onOpenSettings: () => setShowSettings(true) }
+  const SCREENS = {
+    home: <HomeScreen {...screenProps} />,
+    food: <FoodScreen {...screenProps} />,
+    water: <WaterScreen {...screenProps} />,
+    progress: <ProgressScreen {...screenProps} />,
+    workout: <WorkoutScreen {...screenProps} />,
+  }
+
+  return (
+    <div style={{ position: 'relative', overflow: 'hidden' }}>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={tab}
+          variants={pageVariants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          style={{ width: '100%' }}
+        >
+          {SCREENS[tab]}
+        </motion.div>
+      </AnimatePresence>
+      <BottomNav activeTab={tab} onTabChange={setTab} />
+    </div>
+  )
+}

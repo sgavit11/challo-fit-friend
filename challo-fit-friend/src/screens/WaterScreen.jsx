@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion'
 import { useDailyLog } from '../hooks/useDailyLog'
 import { getWaterNudge } from '../lib/nudges'
 import ProgressBar from '../components/ProgressBar'
@@ -37,9 +38,15 @@ export default function WaterScreen({ profile }) {
         </div>
       </div>
 
-      <button className="btn btn-primary" style={{ fontSize: 20, padding: 20, marginBottom: 12 }} onClick={logWater}>
+      <motion.button
+        className="btn btn-primary"
+        style={{ fontSize: 20, padding: 20, marginBottom: 12 }}
+        whileTap={{ scale: 0.90 }}
+        transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+        onClick={logWater}
+      >
         + {tapAmount}{unit}
-      </button>
+      </motion.button>
       <button className="btn btn-secondary" onClick={reset}>Reset today</button>
     </div>
   )
