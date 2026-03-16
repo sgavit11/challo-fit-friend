@@ -14,6 +14,14 @@ describe('StepDOB', () => {
     expect(screen.getByRole('button', { name: /next/i })).toBeDisabled()
   })
 
+  it('Next button stays disabled for invalid calendar dates like Feb 30', () => {
+    render(<StepDOB onNext={vi.fn()} />)
+    fireEvent.change(screen.getByLabelText('Month'), { target: { value: '2' } })
+    fireEvent.change(screen.getByLabelText('Day'), { target: { value: '30' } })
+    fireEvent.change(screen.getByLabelText('Year'), { target: { value: '1990' } })
+    expect(screen.getByRole('button', { name: /next/i })).toBeDisabled()
+  })
+
   it('calls onNext with dob in YYYY-MM-DD format', () => {
     const onNext = vi.fn()
     render(<StepDOB onNext={onNext} />)

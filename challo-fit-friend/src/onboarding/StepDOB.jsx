@@ -41,7 +41,7 @@ export default function StepDOB({ onNext }) {
       <div style={{ display: 'flex', gap: 8, marginBottom: 32 }}>
         <div style={{ flex: 2 }}>
           <label className="label" htmlFor="dob-month">Month</label>
-          <select id="dob-month" aria-label="Month" value={month} onChange={e => setMonth(e.target.value)} style={selectStyle}>
+          <select id="dob-month" value={month} onChange={e => setMonth(e.target.value)} style={selectStyle}>
             <option value="">Month</option>
             {MONTHS.slice(1).map((m, i) => (
               <option key={m} value={i + 1}>{m}</option>
@@ -50,14 +50,14 @@ export default function StepDOB({ onNext }) {
         </div>
         <div style={{ flex: 1 }}>
           <label className="label" htmlFor="dob-day">Day</label>
-          <select id="dob-day" aria-label="Day" value={day} onChange={e => setDay(e.target.value)} style={selectStyle}>
+          <select id="dob-day" value={day} onChange={e => setDay(e.target.value)} style={selectStyle}>
             <option value="">Day</option>
             {DAYS.map(d => <option key={d} value={d}>{d}</option>)}
           </select>
         </div>
         <div style={{ flex: 2 }}>
           <label className="label" htmlFor="dob-year">Year</label>
-          <select id="dob-year" aria-label="Year" value={year} onChange={e => setYear(e.target.value)} style={selectStyle}>
+          <select id="dob-year" value={year} onChange={e => setYear(e.target.value)} style={selectStyle}>
             <option value="">Year</option>
             {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
           </select>
