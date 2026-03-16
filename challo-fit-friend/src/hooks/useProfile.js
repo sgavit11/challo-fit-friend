@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { getProfiles, saveProfile, deleteProfile, getActiveProfileId, setActiveProfileId } from '../storage'
+import { getProfiles, saveProfile, deleteProfile, getActiveProfileId, setActiveProfileId, clearActiveProfileId } from '../storage'
 
 export const useProfile = () => {
   const [profiles, setProfiles] = useState(() => getProfiles())
@@ -8,7 +8,7 @@ export const useProfile = () => {
     if (!id) return null
     const all = getProfiles()
     if (!all.find(p => p.id === id)) {
-      localStorage.removeItem('cff_active_profile')
+      clearActiveProfileId()
       return null
     }
     return id

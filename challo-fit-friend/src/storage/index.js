@@ -34,6 +34,7 @@ export const deleteProfile = (id) => {
 // --- Active profile ---
 export const getActiveProfileId = () => localStorage.getItem(KEYS.ACTIVE_PROFILE)
 export const setActiveProfileId = (id) => localStorage.setItem(KEYS.ACTIVE_PROFILE, id)
+export const clearActiveProfileId = () => localStorage.removeItem(KEYS.ACTIVE_PROFILE)
 
 // --- Food library ---
 export const getFoodLibrary = () => read(KEYS.FOOD_LIBRARY, [])
