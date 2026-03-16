@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import { vi, describe, it, expect, beforeEach } from 'vitest'
+import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest'
 import SettingsScreen from './SettingsScreen'
 
 const profile = {
@@ -33,8 +33,15 @@ global.URL.createObjectURL = vi.fn(() => 'blob:mock')
 global.URL.revokeObjectURL = vi.fn()
 
 describe('SettingsScreen — Data card', () => {
+  let originalFileReader
+
   beforeEach(() => {
     vi.clearAllMocks()
+    originalFileReader = global.FileReader
+  })
+
+  afterEach(() => {
+    global.FileReader = originalFileReader
   })
 
   it('renders Export and Import buttons', () => {
@@ -48,7 +55,6 @@ describe('SettingsScreen — Data card', () => {
 
     const backup = JSON.stringify({ version: 1, profileId: 'p1', foodLibrary: [], dailyLogs: {}, weightLog: [] })
     const input = document.querySelector('input[type="file"]')
-    const originalFileReader = global.FileReader
     global.FileReader = class {
       readAsText() { setTimeout(() => { this.onload({ target: { result: backup } }) }, 0) }
     }
@@ -58,15 +64,12 @@ describe('SettingsScreen — Data card', () => {
     await waitFor(() => {
       expect(screen.getByText(/imported 2 foods/i)).toBeInTheDocument()
     })
-
-    global.FileReader = originalFileReader
   })
 
   it('shows error toast for invalid JSON', async () => {
     render(<SettingsScreen profile={profile} onUpdate={() => {}} onBack={() => {}} />)
 
     const input = document.querySelector('input[type="file"]')
-    const originalFileReader = global.FileReader
     global.FileReader = class {
       readAsText() { setTimeout(() => { this.onload({ target: { result: 'not json' } }) }, 0) }
     }
@@ -76,8 +79,6 @@ describe('SettingsScreen — Data card', () => {
     await waitFor(() => {
       expect(screen.getByText(/invalid backup file/i)).toBeInTheDocument()
     })
-
-    global.FileReader = originalFileReader
   })
 
   it('shows "nothing new" toast when all counts are zero', async () => {
@@ -88,7 +89,6 @@ describe('SettingsScreen — Data card', () => {
 
     const backup = JSON.stringify({ version: 1, profileId: 'p1', foodLibrary: [], dailyLogs: {}, weightLog: [] })
     const input = document.querySelector('input[type="file"]')
-    const originalFileReader = global.FileReader
     global.FileReader = class {
       readAsText() { setTimeout(() => { this.onload({ target: { result: backup } }) }, 0) }
     }
@@ -98,7 +98,5 @@ describe('SettingsScreen — Data card', () => {
     await waitFor(() => {
       expect(screen.getByText(/nothing new to import/i)).toBeInTheDocument()
     })
-
-    global.FileReader = originalFileReader
   })
 })

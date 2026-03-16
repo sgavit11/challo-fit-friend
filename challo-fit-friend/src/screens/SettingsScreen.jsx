@@ -205,7 +205,7 @@ export default function SettingsScreen({ profile, onUpdate, onBack }) {
         <button className="btn btn-primary" onClick={handleExport} style={{ marginBottom: 8 }}>
           Export my data
         </button>
-        <button className="btn btn-secondary" onClick={() => fileInputRef.current.click()}>
+        <button className="btn btn-secondary" onClick={() => fileInputRef.current?.click()}>
           Import from backup
         </button>
       </div>
