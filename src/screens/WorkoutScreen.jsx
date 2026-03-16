@@ -26,7 +26,7 @@ export default function WorkoutScreen({ profile }) {
             <>
               <p style={{ marginBottom: 16 }}>Did you get a session in today {profile.name}? 💪</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {(profile.workoutLabels || ['Session']).map(label => (
+                {(profile.workoutLabels?.length ? profile.workoutLabels : ['Session']).map(label => (
                   <button key={label} className="btn btn-primary" onClick={() => logWorkout(label)}>
                     ✅ {label}
                   </button>
