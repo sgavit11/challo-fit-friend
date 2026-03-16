@@ -1,4 +1,5 @@
 [build]
+  base = "challo-fit-friend"
   command = "npm run build"
   publish = "dist"
 
