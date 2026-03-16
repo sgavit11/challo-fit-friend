@@ -1,6 +1,5 @@
 import { useState, useCallback } from 'react'
 import { getProfiles, saveProfile, deleteProfile, getActiveProfileId, setActiveProfileId } from '../storage'
-import { todayKey } from '../lib/calculations'
 
 export const useProfile = () => {
   const [profiles, setProfiles] = useState(() => getProfiles())
