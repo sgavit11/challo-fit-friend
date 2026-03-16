@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { exportAllData, importAllData, getActiveProfileId } from '../storage'
 
 const getStorageUsedMB = () => {
   let total = 0
@@ -21,6 +22,10 @@ export default function SettingsScreen({ profile, onUpdate, onBack }) {
   const [targetDate, setTargetDate] = useState(profile.targetDate || '')
   const [saved, setSaved] = useState(false)
   const [storageMB, setStorageMB] = useState('0')
+  const [toast, setToast] = useState(null)
+  const fileInputRef = useRef()
+
+  const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 2500) }
 
   useEffect(() => { setStorageMB(getStorageUsedMB()) }, [])
 
@@ -40,6 +45,45 @@ export default function SettingsScreen({ profile, onUpdate, onBack }) {
     })
     setSaved(true)
     setTimeout(() => setSaved(false), 1500)
+  }
+
+  const handleExport = () => {
+    const data = exportAllData()
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'challo-backup.json'
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const handleImport = (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    e.target.value = ''
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      let backup
+      try {
+        backup = JSON.parse(ev.target.result)
+      } catch {
+        showToast('Invalid backup file')
+        return
+      }
+      if (!backup.version) {
+        showToast('Invalid backup file')
+        return
+      }
+      const currentProfileId = getActiveProfileId()
+      const { foods, days, weights } = importAllData(backup, currentProfileId)
+      if (foods === 0 && days === 0 && weights === 0) {
+        showToast('Nothing new to import — all data already up to date')
+      } else {
+        showToast(`Imported ${foods} foods, ${days} log days, ${weights} weight entries`)
+      }
+    }
+    reader.readAsText(file)
   }
 
   const numInput = (label, value, onChange) => (
@@ -71,6 +115,8 @@ export default function SettingsScreen({ profile, onUpdate, onBack }) {
         ← Back
       </button>
       <h1>The Recipe ⚙️</h1>
+
+      {toast && <div className="nudge">{toast}</div>}
 
       {/* Profile */}
       <div className="card">
@@ -144,6 +190,24 @@ export default function SettingsScreen({ profile, onUpdate, onBack }) {
         <div style={{ padding: '8px 12px', background: 'var(--bg-input)', borderRadius: 8, fontSize: 14 }}>
           Scanner: <span style={{ color: 'var(--green)' }}>✅ Ready (when deployed to Netlify)</span>
         </div>
+      </div>
+
+      {/* Data */}
+      <div className="card">
+        <h2>Data</h2>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".json"
+          style={{ display: 'none' }}
+          onChange={handleImport}
+        />
+        <button className="btn btn-primary" onClick={handleExport} style={{ marginBottom: 8 }}>
+          Export my data
+        </button>
+        <button className="btn btn-secondary" onClick={() => fileInputRef.current?.click()}>
+          Import from backup
+        </button>
       </div>
 
       {/* Storage warning */}

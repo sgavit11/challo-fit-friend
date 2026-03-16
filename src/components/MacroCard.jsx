@@ -1,16 +1,17 @@
+import { motion } from 'framer-motion'
 import ProgressBar from './ProgressBar'
 
 const MACRO_META = {
-  calories: { label: 'Energy on the plate 🔥', color: 'var(--saffron)', unit: 'kcal' },
-  protein:  { label: 'The main course 🍗',    color: 'var(--green)',   unit: 'g' },
-  carbs:    { label: 'Fuel for the dance floor 🍚', color: '#60A5FA', unit: 'g' },
-  fat:      { label: 'The good stuff 🥑',     color: '#A78BFA',        unit: 'g' },
+  calories: { label: 'Energy on the plate 🔥', color: 'linear-gradient(90deg, #2DD4BF, #38BDF8)', unit: 'kcal' },
+  protein:  { label: 'The main course 🍗',    color: 'var(--green)',    unit: 'g' },
+  carbs:    { label: 'Fuel for the dance floor 🍚', color: 'var(--blue)', unit: 'g' },
+  fat:      { label: 'The good stuff 🥑',     color: 'var(--purple)',   unit: 'g' },
 }
 
 export default function MacroCard({ log, targets }) {
   return (
     <div className="card">
-      {['calories', 'protein', 'carbs', 'fat'].map(key => {
+      {['calories', 'protein', 'carbs', 'fat'].map((key, index) => {
         const meta = MACRO_META[key]
         const value = log[key] ?? 0
         const target = targets[key] ?? 0
@@ -19,14 +20,20 @@ export default function MacroCard({ log, targets }) {
           ? `${diff} ${meta.unit} left`
           : `${Math.abs(diff)} ${meta.unit} over`
         return (
-          <ProgressBar
+          <motion.div
             key={key}
-            value={value}
-            max={target}
-            color={meta.color}
-            label={meta.label}
-            sublabel={sublabel}
-          />
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.06, duration: 0.25, ease: 'easeOut' }}
+          >
+            <ProgressBar
+              value={value}
+              max={target}
+              color={meta.color}
+              label={meta.label}
+              sublabel={sublabel}
+            />
+          </motion.div>
         )
       })}
     </div>

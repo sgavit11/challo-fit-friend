@@ -72,8 +72,16 @@ export default function ProgressScreen({ profile }) {
           { label: 'Goal', val: `${goalWeight} ${profile.weightUnit}` },
           { label: 'Est. weeks', val: weeksLeft === Infinity ? '—' : String(weeksLeft) },
         ].map(({ label, val }) => (
-          <div key={label} className="card" style={{ flex: 1, textAlign: 'center', padding: 12 }}>
-            <div style={{ fontSize: 16, fontWeight: 700 }}>{val}</div>
+          <div key={label} className="card" style={{
+          flex: 1, textAlign: 'center', padding: 12,
+          ...(label === 'Current' && { borderColor: 'rgba(45,212,191,0.3)', background: 'rgba(45,212,191,0.05)' }),
+          ...(label === 'Goal' && { borderColor: 'rgba(110,231,183,0.25)' }),
+        }}>
+            <div style={{
+            fontFamily: "'Outfit', sans-serif",
+            fontSize: 16, fontWeight: 700,
+            color: label === 'Current' ? 'var(--primary)' : label === 'Goal' ? 'var(--green)' : 'var(--text)',
+          }}>{val}</div>
             <div className="label">{label}</div>
           </div>
         ))}

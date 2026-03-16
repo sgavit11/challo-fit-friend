@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion'
 import { useDailyLog } from '../hooks/useDailyLog'
 import { getWaterNudge } from '../lib/nudges'
 import ProgressBar from '../components/ProgressBar'
@@ -28,18 +29,27 @@ export default function WaterScreen({ profile }) {
 
       {nudge && <div className="nudge">{nudge}</div>}
 
-      <div className="card" style={{ textAlign: 'center', marginBottom: 24 }}>
-        <div style={{ fontSize: 64, marginBottom: 8 }}>💧</div>
-        <div className="value" style={{ fontSize: 36 }}>{currentDisplay}<span style={{ fontSize: 18, color: 'var(--text-muted)' }}>{unit}</span></div>
-        <div style={{ color: 'var(--text-muted)', fontSize: 14 }}>of {targetDisplay}{unit} goal</div>
-        <div style={{ marginTop: 16 }}>
-          <ProgressBar value={log.waterOz} max={profile.targets.waterOz} color="#60A5FA" label="" sublabel="" />
+      <div className="card" style={{ textAlign: 'center', marginBottom: 24, padding: '28px 16px', background: 'var(--bg-card-2)' }}>
+        <svg width="52" height="52" viewBox="0 0 24 24" fill="none" style={{ margin: '0 auto 16px', display: 'block' }} stroke="#38BDF8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" fill="rgba(45,212,191,0.12)"/>
+        </svg>
+        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 4, marginBottom: 6 }}>
+          <span className="value" style={{ fontSize: 48, lineHeight: 1 }}>{currentDisplay}</span>
+          <span style={{ fontSize: 18, color: 'var(--text-muted)', fontWeight: 500 }}>{unit}</span>
         </div>
+        <div style={{ color: 'var(--text-muted)', fontSize: 14, marginBottom: 20 }}>of {targetDisplay}{unit} goal</div>
+        <ProgressBar value={log.waterOz} max={profile.targets.waterOz} color="linear-gradient(90deg, #2DD4BF, #38BDF8)" label="" sublabel="" />
       </div>
 
-      <button className="btn btn-primary" style={{ fontSize: 20, padding: 20, marginBottom: 12 }} onClick={logWater}>
+      <motion.button
+        className="btn btn-primary"
+        style={{ fontSize: 20, padding: 20, marginBottom: 12 }}
+        whileTap={{ scale: 0.90 }}
+        transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+        onClick={logWater}
+      >
         + {tapAmount}{unit}
-      </button>
+      </motion.button>
       <button className="btn btn-secondary" onClick={reset}>Reset today</button>
     </div>
   )

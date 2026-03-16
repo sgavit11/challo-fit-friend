@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import {
-  calcCalorieTarget, calcProteinTarget, calcWaterTarget,
+  calcCalorieTarget, calcProteinTarget, calcWaterTarget, calcAge, calcFatTarget, calcCarbTarget,
   calcMacrosForQuantity, calcWeeklyAverage, calcTrendLine,
   calcWeeksToGoal, todayKey, greetingIndex,
 } from './calculations'
@@ -20,8 +20,11 @@ describe('calcProteinTarget', () => {
 })
 
 describe('calcWaterTarget', () => {
-  it('returns 96oz as default', () => {
-    expect(calcWaterTarget()).toBe(96)
+  it('returns half of bodyweight in oz', () => {
+    expect(calcWaterTarget(180)).toBe(90)
+  })
+  it('falls back gracefully with no argument', () => {
+    expect(calcWaterTarget()).toBe(80)
   })
 })
 
@@ -56,5 +59,34 @@ describe('greetingIndex', () => {
     const idx = greetingIndex()
     expect(idx).toBeGreaterThanOrEqual(0)
     expect(idx).toBeLessThanOrEqual(5)
+  })
+})
+
+describe('calcAge', () => {
+  it('calculates age from YYYY-MM-DD string', () => {
+    const age = calcAge('1995-01-01')
+    expect(age).toBeGreaterThanOrEqual(29)
+    expect(age).toBeLessThanOrEqual(32)
+  })
+})
+
+describe('calcCalorieTarget with dob', () => {
+  it('accepts dob and produces a valid calorie range', () => {
+    const cals = calcCalorieTarget({ weight: 180, height: 70, dob: '1995-01-01', sex: 'm', activityLevel: 'moderate' })
+    expect(cals).toBeGreaterThan(2000)
+    expect(cals).toBeLessThan(3500)
+  })
+})
+
+describe('calcFatTarget', () => {
+  it('returns 30% of calories divided by 9', () => {
+    expect(calcFatTarget(2400)).toBe(80)
+  })
+})
+
+describe('calcCarbTarget', () => {
+  it('returns remaining calories from carbs after protein and fat', () => {
+    // 2400 kcal - 160g protein (640 kcal) - 80g fat (720 kcal) = 1040 kcal → 260g carbs
+    expect(calcCarbTarget(2400, 160, 80)).toBe(260)
   })
 })

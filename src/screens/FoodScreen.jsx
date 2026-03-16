@@ -7,9 +7,9 @@ import MacroTracker from './food/MacroTracker'
 import FoodLibrary from './food/FoodLibrary'
 import MealBuilder from './food/MealBuilder'
 import FoodScanner from './food/FoodScanner'
+import ManualEntryForm from './food/ManualEntryForm'
 
-// Weekly average of current week's daily logs
-function WeeklyMacroAverage({ profileId, targets }) {
+function WeeklyMacroAverage({ profileId }) {
   const today = new Date()
   const logs = []
   for (let i = 6; i >= 0; i--) {
@@ -24,7 +24,7 @@ function WeeklyMacroAverage({ profileId, targets }) {
     <div className="card" style={{ marginBottom: 12 }}>
       <div className="label" style={{ marginBottom: 8 }}>7-day average</div>
       <div style={{ display: 'flex', gap: 12 }}>
-        {['calories','protein','fat','carbs'].map(k => (
+        {['calories', 'protein', 'fat', 'carbs'].map(k => (
           <div key={k} style={{ flex: 1, textAlign: 'center' }}>
             <div style={{ fontWeight: 700 }}>{calcWeeklyAverage(logs, k)}</div>
             <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{k === 'calories' ? 'kcal' : 'g'}</div>
@@ -39,13 +39,17 @@ function WeeklyMacroAverage({ profileId, targets }) {
 export default function FoodScreen({ profile }) {
   const { log, logMeal } = useDailyLog(profile.id)
   const { library, addItem, removeItem } = useFoodLibrary()
-  const [view, setView] = useState('main') // 'main' | 'scanner' | 'build'
+  const [view, setView] = useState('main') // 'main' | 'manual' | 'scanner' | 'build'
   const [selectedItem, setSelectedItem] = useState(null)
   const [toast, setToast] = useState(null)
 
-  const showToast = (msg) => {
-    setToast(msg)
-    setTimeout(() => setToast(null), 2500)
+  const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 2500) }
+
+  const handleSaveItem = (item) => {
+    const isFirst = library.length === 0
+    addItem(item)
+    if (isFirst) showToast('First ingredient in — your kitchen is open 👨‍🍳')
+    setView('main')
   }
 
   const handleLog = (mealEntry) => {
@@ -55,15 +59,12 @@ export default function FoodScreen({ profile }) {
     setSelectedItem(null)
   }
 
-  if (view === 'scanner') {
-    return <FoodScanner onSave={(item) => {
-      const isFirst = library.length === 0
-      addItem(item)
-      if (isFirst) showToast('First ingredient in — your kitchen is open 👨‍🍳')
-      setView('main')
-    }} onCancel={() => setView('main')} />
+  if (view === 'manual') {
+    return <ManualEntryForm onSave={handleSaveItem} onCancel={() => setView('main')} onScanInstead={() => setView('scanner')} />
   }
-
+  if (view === 'scanner') {
+    return <FoodScanner onSave={handleSaveItem} onCancel={() => setView('manual')} />
+  }
   if (view === 'build' && selectedItem) {
     return <MealBuilder item={selectedItem} onLog={handleLog} onCancel={() => setView('main')} />
   }
@@ -73,12 +74,12 @@ export default function FoodScreen({ profile }) {
       {toast && <div className="nudge">{toast}</div>}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <h1>Food 🍽️</h1>
-        <button className="btn btn-primary" style={{ width: 'auto', padding: '8px 16px' }} onClick={() => setView('scanner')}>
-          📸 Scan
+        <button className="btn btn-primary" style={{ width: 'auto', padding: '8px 16px' }} onClick={() => setView('manual')}>
+          + Add
         </button>
       </div>
       <MacroTracker log={log} profile={profile} />
-      <WeeklyMacroAverage profileId={profile.id} targets={profile.targets} />
+      <WeeklyMacroAverage profileId={profile.id} />
       <h2 style={{ marginBottom: 12 }}>My Library</h2>
       <FoodLibrary
         library={library}

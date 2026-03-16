@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import { useProfile } from './hooks/useProfile'
 import BottomNav from './components/BottomNav'
 import OnboardingFlow from './onboarding/OnboardingFlow'
@@ -10,24 +11,25 @@ import ProgressScreen from './screens/ProgressScreen'
 import WorkoutScreen from './screens/WorkoutScreen'
 import SettingsScreen from './screens/SettingsScreen'
 
+const pageVariants = {
+  initial: { x: '100%', opacity: 0 },
+  animate: { x: 0, opacity: 1, transition: { duration: 0.28, ease: 'easeInOut' } },
+  exit: { x: '-100%', opacity: 0, transition: { duration: 0.28, ease: 'easeInOut' } },
+}
+
 export default function App() {
   const { profiles, activeProfile, addOrUpdateProfile, removeProfile, switchProfile } = useProfile()
   const [tab, setTab] = useState('home')
   const [showSettings, setShowSettings] = useState(false)
 
-  // No profiles → run onboarding
   if (profiles.length === 0) {
     return (
       <OnboardingFlow
-        onComplete={(profile) => {
-          addOrUpdateProfile(profile)
-          switchProfile(profile.id)
-        }}
+        onComplete={(profile) => { addOrUpdateProfile(profile); switchProfile(profile.id) }}
       />
     )
   }
 
-  // Has profiles but none active → show profile switcher
   if (!activeProfile) {
     return (
       <ProfileSwitcher
@@ -40,26 +42,38 @@ export default function App() {
 
   if (showSettings) {
     return (
-      <>
-        <SettingsScreen
-          profile={activeProfile}
-          onUpdate={addOrUpdateProfile}
-          onBack={() => setShowSettings(false)}
-        />
-      </>
+      <SettingsScreen
+        profile={activeProfile}
+        onUpdate={addOrUpdateProfile}
+        onBack={() => setShowSettings(false)}
+      />
     )
   }
 
   const screenProps = { profile: activeProfile, onOpenSettings: () => setShowSettings(true) }
+  const SCREENS = {
+    home: <HomeScreen {...screenProps} />,
+    food: <FoodScreen {...screenProps} />,
+    water: <WaterScreen {...screenProps} />,
+    progress: <ProgressScreen {...screenProps} />,
+    workout: <WorkoutScreen {...screenProps} />,
+  }
 
   return (
-    <>
-      {tab === 'home'     && <HomeScreen    {...screenProps} />}
-      {tab === 'food'     && <FoodScreen    {...screenProps} />}
-      {tab === 'water'    && <WaterScreen   {...screenProps} />}
-      {tab === 'progress' && <ProgressScreen {...screenProps} />}
-      {tab === 'workout'  && <WorkoutScreen  {...screenProps} />}
+    <div style={{ position: 'relative', overflow: 'hidden' }}>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={tab}
+          variants={pageVariants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          style={{ width: '100%' }}
+        >
+          {SCREENS[tab]}
+        </motion.div>
+      </AnimatePresence>
       <BottomNav activeTab={tab} onTabChange={setTab} />
-    </>
+    </div>
   )
 }
