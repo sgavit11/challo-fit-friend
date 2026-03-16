@@ -20,26 +20,26 @@ export default function ScrollPicker({ options, value, onChange }) {
 
   return (
     <div style={{ position: 'relative', height: ITEM_HEIGHT * 3, overflow: 'hidden', userSelect: 'none' }}>
-      {/* Selection band */}
+      {/* Selection band — behind the text (zIndex 0) */}
       <div style={{
         position: 'absolute', top: ITEM_HEIGHT, left: 0, right: 0,
         height: ITEM_HEIGHT, background: 'var(--bg-input)',
-        borderRadius: 8, pointerEvents: 'none', zIndex: 1,
+        borderRadius: 8, pointerEvents: 'none', zIndex: 0,
         border: '1px solid var(--saffron)',
       }} />
-      {/* Top fade */}
+      {/* Top fade — above text (zIndex 2) */}
       <div style={{
         position: 'absolute', top: 0, left: 0, right: 0, height: ITEM_HEIGHT,
         background: 'linear-gradient(to bottom, var(--bg), transparent)',
         pointerEvents: 'none', zIndex: 2,
       }} />
-      {/* Bottom fade */}
+      {/* Bottom fade — above text (zIndex 2) */}
       <div style={{
         position: 'absolute', bottom: 0, left: 0, right: 0, height: ITEM_HEIGHT,
         background: 'linear-gradient(to top, var(--bg), transparent)',
         pointerEvents: 'none', zIndex: 2,
       }} />
-      {/* Scrollable list */}
+      {/* Scrollable list — above selection band (zIndex 1) */}
       <div
         ref={ref}
         data-testid="scroll-picker-list"
@@ -49,6 +49,7 @@ export default function ScrollPicker({ options, value, onChange }) {
           scrollSnapType: 'y mandatory', scrollbarWidth: 'none',
           WebkitOverflowScrolling: 'touch',
           paddingTop: ITEM_HEIGHT, paddingBottom: ITEM_HEIGHT,
+          position: 'relative', zIndex: 1,
         }}
       >
         {options.map(opt => (
