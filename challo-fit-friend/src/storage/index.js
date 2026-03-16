@@ -82,3 +82,59 @@ export const saveWeightEntry = (entry) => {
   else log.push(entry)
   write(KEYS.WEIGHT_LOG, log)
 }
+
+// --- Export / Import ---
+export const exportAllData = () => {
+  const profileId = getActiveProfileId()
+  const allLogs = read(KEYS.DAILY_LOGS, {})
+  const prefix = `${profileId}_`
+  const dailyLogs = Object.fromEntries(
+    Object.entries(allLogs).filter(([key]) => key.startsWith(prefix))
+  )
+  const weightLog = read(KEYS.WEIGHT_LOG, []).filter(e => e.profileId === profileId)
+  return {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    profileId,
+    foodLibrary: getFoodLibrary(),
+    dailyLogs,
+    weightLog,
+  }
+}
+
+export const importAllData = (backup, currentProfileId) => {
+  let foods = 0, days = 0, weights = 0
+
+  // Food library — check existence by id before saving; do NOT rely on saveFoodItem's
+  // built-in upsert which would silently overwrite existing items
+  const existingFoodIds = new Set(getFoodLibrary().map(i => i.id))
+  for (const item of (backup.foodLibrary ?? [])) {
+    if (!existingFoodIds.has(item.id)) {
+      saveFoodItem(item)
+      foods++
+    }
+  }
+
+  // Daily logs — use slice (not split) because profileIds may contain underscores
+  const allLogs = read(KEYS.DAILY_LOGS, {})
+  for (const [key, entry] of Object.entries(backup.dailyLogs ?? {})) {
+    const date = key.slice((backup.profileId ?? '').length + 1)
+    const remappedKey = `${currentProfileId}_${date}`
+    if (!allLogs[remappedKey]) {
+      allLogs[remappedKey] = entry
+      days++
+    }
+  }
+  write(KEYS.DAILY_LOGS, allLogs)
+
+  // Weight log — remap profileId, skip duplicates by id
+  const existingWeightIds = new Set(read(KEYS.WEIGHT_LOG, []).map(e => e.id))
+  for (const entry of (backup.weightLog ?? [])) {
+    if (!existingWeightIds.has(entry.id)) {
+      saveWeightEntry({ ...entry, profileId: currentProfileId })
+      weights++
+    }
+  }
+
+  return { foods, days, weights }
+}
