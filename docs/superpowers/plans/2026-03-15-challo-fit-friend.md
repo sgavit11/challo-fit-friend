@@ -1731,8 +1731,9 @@ git commit -m "feat: add onboarding flow and profile switcher with 5-step setup"
 - [ ] **Step 1: Replace `src/screens/HomeScreen.jsx`**
 
 ```jsx
+import { useState } from 'react'
 import { useDailyLog } from '../hooks/useDailyLog'
-import { todayKey, greetingIndex } from '../lib/calculations'
+import { greetingIndex } from '../lib/calculations'
 import MacroCard from '../components/MacroCard'
 import ProgressBar from '../components/ProgressBar'
 
@@ -1746,7 +1747,8 @@ const GREETINGS = [
 ]
 
 export default function HomeScreen({ profile, onOpenSettings }) {
-  const { log } = useDailyLog(profile.id)
+  const { log, update } = useDailyLog(profile.id)
+  const [stepsInput, setStepsInput] = useState('')
   const greeting = GREETINGS[greetingIndex()](profile.name)
   const waterPct = Math.min(100, (log.waterOz / profile.targets.waterOz) * 100)
   const stepsPct = Math.min(100, (log.steps / profile.targets.steps) * 100)
@@ -1791,6 +1793,27 @@ export default function HomeScreen({ profile, onOpenSettings }) {
           label={`${log.steps.toLocaleString()} / ${profile.targets.steps.toLocaleString()}`}
           sublabel={`${Math.round(stepsPct)}%`}
         />
+        <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+          <input
+            type="number"
+            placeholder="Enter steps"
+            value={stepsInput}
+            onChange={e => setStepsInput(e.target.value)}
+            style={{ flex: 1 }}
+          />
+          <button
+            className="btn btn-primary"
+            style={{ width: 'auto', padding: '10px 16px' }}
+            onClick={() => {
+              const n = Number(stepsInput)
+              if (!n || n <= 0) return
+              update({ steps: n })
+              setStepsInput('')
+            }}
+          >
+            Log
+          </button>
+        </div>
       </div>
 
       {/* Workout */}
@@ -1841,7 +1864,7 @@ const TAP_ML = 470
 
 export default function WaterScreen({ profile }) {
   const { log, update } = useDailyLog(profile.id)
-  const isOz = profile.weightUnit !== 'kg' // use oz unless metric profile
+  const isOz = (profile.waterUnit ?? 'oz') === 'oz' // waterUnit set in Settings, defaults to oz
   const tapAmount = isOz ? TAP_OZ : TAP_ML
   const targetDisplay = isOz ? profile.targets.waterOz : Math.round(profile.targets.waterOz * 29.5735)
   const currentDisplay = isOz ? log.waterOz : Math.round(log.waterOz * 29.5735)
@@ -1903,7 +1926,6 @@ git commit -m "feat: implement Water screen with tap-to-log and nudges"
 ```jsx
 import { useDailyLog } from '../hooks/useDailyLog'
 import { getWorkoutNudge } from '../lib/nudges'
-import { todayKey } from '../lib/calculations'
 
 export default function WorkoutScreen({ profile }) {
   const { log, update } = useDailyLog(profile.id)
@@ -2070,10 +2092,40 @@ export default function MealBuilder({ item, onLog, onCancel }) {
 import { useState } from 'react'
 import { useDailyLog } from '../hooks/useDailyLog'
 import { useFoodLibrary } from '../hooks/useFoodLibrary'
+import { getDailyLog } from '../storage'
+import { calcWeeklyAverage, todayKey } from '../lib/calculations'
 import MacroTracker from './food/MacroTracker'
 import FoodLibrary from './food/FoodLibrary'
 import MealBuilder from './food/MealBuilder'
 import FoodScanner from './food/FoodScanner'
+
+// Weekly average of current week's daily logs
+function WeeklyMacroAverage({ profileId, targets }) {
+  const today = new Date()
+  const logs = []
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(today)
+    d.setDate(d.getDate() - i)
+    const key = d.toISOString().split('T')[0]
+    const log = getDailyLog(profileId, key)
+    if (log.calories > 0) logs.push(log)
+  }
+  if (logs.length === 0) return null
+  return (
+    <div className="card" style={{ marginBottom: 12 }}>
+      <div className="label" style={{ marginBottom: 8 }}>7-day average</div>
+      <div style={{ display: 'flex', gap: 12 }}>
+        {['calories','protein','fat','carbs'].map(k => (
+          <div key={k} style={{ flex: 1, textAlign: 'center' }}>
+            <div style={{ fontWeight: 700 }}>{calcWeeklyAverage(logs, k)}</div>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{k === 'calories' ? 'kcal' : 'g'}</div>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{k}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
 
 export default function FoodScreen({ profile }) {
   const { log, logMeal } = useDailyLog(profile.id)
@@ -2095,7 +2147,12 @@ export default function FoodScreen({ profile }) {
   }
 
   if (view === 'scanner') {
-    return <FoodScanner onSave={(item) => { addItem(item); showToast('First ingredient in — your kitchen is open 👨‍🍳'); setView('main') }} onCancel={() => setView('main')} />
+    return <FoodScanner onSave={(item) => {
+      const isFirst = library.length === 0
+      addItem(item)
+      showToast(isFirst ? 'First ingredient in — your kitchen is open 👨‍🍳' : `${item.name} saved to library 📚`)
+      setView('main')
+    }} onCancel={() => setView('main')} />
   }
 
   if (view === 'build' && selectedItem) {
@@ -2112,6 +2169,7 @@ export default function FoodScreen({ profile }) {
         </button>
       </div>
       <MacroTracker log={log} profile={profile} />
+      <WeeklyMacroAverage profileId={profile.id} targets={profile.targets} />
       <h2 style={{ marginBottom: 12 }}>My Library</h2>
       <FoodLibrary
         library={library}
@@ -2249,8 +2307,6 @@ Use numbers only for numeric fields. If you cannot read a value clearly, use 0. 
     })
   }
 }
-
-export const config = { path: '/api/scan' }
 ```
 
 - [ ] **Step 2: Create `src/lib/scannerApi.js`**
@@ -2287,6 +2343,11 @@ export default function FoodScanner({ onSave, onCancel }) {
 
   const handleFile = async (file) => {
     if (!file) return
+    if (!navigator.onLine) {
+      setErrorMsg("You're offline — scanner needs a connection 📡")
+      setStage('error')
+      return
+    }
     setStage('scanning')
     try {
       const base64 = await fileToBase64(file)
@@ -2423,7 +2484,21 @@ async function fileToBase64(file) {
 }
 ```
 
-- [ ] **Step 4: Commit**
+- [ ] **Step 4: Verify build succeeds**
+
+```bash
+npm run build
+```
+
+Expected: `dist/` folder is created with no errors. If you see an import error in `FoodScanner.jsx`, check the import path for `scannerApi.js`.
+
+Check the Netlify Function has no syntax errors:
+```bash
+node --input-type=module < netlify/functions/claude-vision.js 2>&1 || echo "Syntax error above"
+```
+Expected: Either no output (clean) or `"Syntax error above"` (fix before proceeding).
+
+- [ ] **Step 5: Commit**
 
 ```bash
 git add netlify/functions/ src/lib/scannerApi.js src/screens/food/FoodScanner.jsx
@@ -2455,6 +2530,15 @@ const MILESTONES = [
   { key: 'goal', check: (start, cur, goal) => cur <= goal, msg: (n) => `GOAL HIT. Table for one — and you're the main event 🎉🍽️🔥` },
 ]
 
+const getMilestoneKey = (profileId) => `cff_milestones_${profileId}`
+const getTriggeredMilestones = (profileId) => {
+  try { return JSON.parse(localStorage.getItem(getMilestoneKey(profileId)) || '[]') } catch { return [] }
+}
+const markMilestoneTriggered = (profileId, key) => {
+  const existing = getTriggeredMilestones(profileId)
+  if (!existing.includes(key)) localStorage.setItem(getMilestoneKey(profileId), JSON.stringify([...existing, key]))
+}
+
 export default function ProgressScreen({ profile }) {
   const { entries, addEntry } = useWeightLog(profile.id)
   const [weight, setWeight] = useState('')
@@ -2477,8 +2561,10 @@ export default function ProgressScreen({ profile }) {
     const entry = { id: Math.random().toString(36).slice(2), profileId: profile.id, weight: w, weightUnit: profile.weightUnit, date: new Date().toISOString().split('T')[0] }
     addEntry(entry)
 
-    const hit = MILESTONES.find(m => !entries.find(e => e.milestoneHit === m.key) && m.check(startWeight, w, goalWeight))
+    const triggered = getTriggeredMilestones(profile.id)
+    const hit = MILESTONES.find(m => !triggered.includes(m.key) && m.check(startWeight, w, goalWeight))
     if (hit) {
+      markMilestoneTriggered(profile.id, hit.key)
       setMilestone(hit.msg(profile.name))
       setConfetti(c => !c) // toggle to re-trigger
     }
@@ -2541,7 +2627,21 @@ export default function ProgressScreen({ profile }) {
 }
 ```
 
-- [ ] **Step 2: Commit**
+- [ ] **Step 2: Verify Progress screen in browser**
+
+```bash
+npm run dev
+```
+
+Navigate to Progress tab. Expected:
+- Stat cards show start weight (from profile), current, goal
+- Enter a weight and tap "Log weight" — graph appears after 1st entry, trend line after 2nd
+- Enter a weight that hits the "down 2 lbs" milestone — confetti fires, milestone banner shows
+- Re-enter the same milestone weight — confetti should NOT fire again (deduplication works)
+
+DevTools → Application → Local Storage → check `cff_milestones_{profileId}` key after milestone hit.
+
+- [ ] **Step 3: Commit**
 
 ```bash
 git add src/screens/ProgressScreen.jsx
@@ -2558,24 +2658,70 @@ git commit -m "feat: implement Progress screen with weight log, trend chart, and
 - [ ] **Step 1: Replace `src/screens/SettingsScreen.jsx`**
 
 ```jsx
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+
+const getStorageUsedMB = () => {
+  let total = 0
+  for (const key in localStorage) {
+    if (Object.hasOwn(localStorage, key)) total += localStorage[key].length * 2
+  }
+  return (total / (1024 * 1024)).toFixed(2)
+}
 
 export default function SettingsScreen({ profile, onUpdate, onBack }) {
   const [targets, setTargets] = useState({ ...profile.targets })
   const [guardrails, setGuardrails] = useState({ ...profile.calorieGuardrails })
+  const [weightUnit, setWeightUnit] = useState(profile.weightUnit || 'lbs')
+  const [waterUnit, setWaterUnit] = useState(profile.waterUnit || 'oz')
+  const [waterReminders, setWaterReminders] = useState(profile.waterReminders ?? true)
+  const [workoutLabels, setWorkoutLabels] = useState((profile.workoutLabels || []).join(', '))
+  const [name, setName] = useState(profile.name)
+  const [currentWeight, setCurrentWeight] = useState(String(profile.currentWeight))
+  const [goalWeight, setGoalWeight] = useState(String(profile.goalWeight))
+  const [targetDate, setTargetDate] = useState(profile.targetDate || '')
   const [saved, setSaved] = useState(false)
+  const [storageMB, setStorageMB] = useState('0')
+
+  useEffect(() => { setStorageMB(getStorageUsedMB()) }, [])
 
   const save = () => {
-    onUpdate({ ...profile, targets, calorieGuardrails: guardrails })
+    onUpdate({
+      ...profile,
+      name,
+      currentWeight: Number(currentWeight),
+      goalWeight: Number(goalWeight),
+      targetDate,
+      weightUnit,
+      waterUnit,
+      waterReminders,
+      workoutLabels: workoutLabels.split(',').map(l => l.trim()).filter(Boolean),
+      targets,
+      calorieGuardrails: guardrails,
+    })
     setSaved(true)
     setTimeout(() => setSaved(false), 1500)
   }
 
-  const t = (key, label, unit) => (
-    <div key={key} style={{ marginBottom: 12 }}>
-      <div className="label">{label} ({unit})</div>
-      <input type="number" value={targets[key]}
-        onChange={e => setTargets(t => ({ ...t, [key]: Number(e.target.value) }))} />
+  const numInput = (label, value, onChange) => (
+    <div style={{ marginBottom: 12 }}>
+      <div className="label">{label}</div>
+      <input type="number" value={value} onChange={e => onChange(Number(e.target.value))} />
+    </div>
+  )
+
+  const unitToggle = (label, value, onChange, optA, optB) => (
+    <div style={{ marginBottom: 12 }}>
+      <div className="label">{label}</div>
+      <div style={{ display: 'flex', gap: 8 }}>
+        {[optA, optB].map(opt => (
+          <button key={opt} onClick={() => onChange(opt)}
+            style={{ flex: 1, padding: 10, border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600,
+              background: value === opt ? 'var(--saffron)' : 'var(--bg-input)',
+              color: value === opt ? '#000' : 'var(--text)' }}>
+            {opt}
+          </button>
+        ))}
+      </div>
     </div>
   )
 
@@ -2585,41 +2731,89 @@ export default function SettingsScreen({ profile, onUpdate, onBack }) {
         ← Back
       </button>
       <h1>The Recipe ⚙️</h1>
-      <p style={{ marginBottom: 20 }}>Adjust your daily targets and guardrails.</p>
 
+      {/* Profile */}
       <div className="card">
-        <h2>Daily targets</h2>
-        {t('calories', 'Calories 🔥', 'kcal')}
-        {t('protein', 'Protein 🍗', 'g')}
-        {t('fat', 'Fat 🥑', 'g')}
-        {t('carbs', 'Carbs 🍚', 'g')}
-        {t('waterOz', 'Water 💧', 'oz')}
-        {t('steps', 'Steps 👟', 'steps')}
-      </div>
-
-      <div className="card">
-        <h2>Calorie guardrails</h2>
+        <h2>My Kitchen 👤</h2>
         <div style={{ marginBottom: 12 }}>
-          <div className="label">Under-eating alert (% of target)</div>
-          <input type="number" value={guardrails.underPercent}
-            onChange={e => setGuardrails(g => ({ ...g, underPercent: Number(e.target.value) }))} />
+          <div className="label">Name</div>
+          <input type="text" value={name} onChange={e => setName(e.target.value)} />
+        </div>
+        <div style={{ marginBottom: 12 }}>
+          <div className="label">Current weight ({weightUnit})</div>
+          <input type="number" value={currentWeight} onChange={e => setCurrentWeight(e.target.value)} />
+        </div>
+        <div style={{ marginBottom: 12 }}>
+          <div className="label">Goal weight ({weightUnit})</div>
+          <input type="number" value={goalWeight} onChange={e => setGoalWeight(e.target.value)} />
         </div>
         <div>
-          <div className="label">Over-eating alert (% of target)</div>
-          <input type="number" value={guardrails.overPercent}
-            onChange={e => setGuardrails(g => ({ ...g, overPercent: Number(e.target.value) }))} />
+          <div className="label">Target date</div>
+          <input type="date" value={targetDate} onChange={e => setTargetDate(e.target.value)} />
         </div>
       </div>
 
+      {/* Units */}
       <div className="card">
-        <h2>Scanner status</h2>
-        <p>The Claude API key is configured in your Netlify dashboard — it never touches the app.</p>
-        <div style={{ marginTop: 8, padding: '8px 12px', background: 'var(--bg-input)', borderRadius: 8, fontSize: 14 }}>
-          Scanner status: <span style={{ color: 'var(--green)' }}>✅ Ready (when deployed)</span>
+        <h2>Units</h2>
+        {unitToggle('Weight', weightUnit, setWeightUnit, 'lbs', 'kg')}
+        {unitToggle('Water', waterUnit, setWaterUnit, 'oz', 'ml')}
+      </div>
+
+      {/* Daily targets */}
+      <div className="card">
+        <h2>Daily targets</h2>
+        {numInput('Calories 🔥 (kcal)', targets.calories, v => setTargets(t => ({ ...t, calories: v })))}
+        {numInput('Protein 🍗 (g)', targets.protein, v => setTargets(t => ({ ...t, protein: v })))}
+        {numInput('Fat 🥑 (g)', targets.fat, v => setTargets(t => ({ ...t, fat: v })))}
+        {numInput('Carbs 🍚 (g)', targets.carbs, v => setTargets(t => ({ ...t, carbs: v })))}
+        {numInput('Water 💧 (oz)', targets.waterOz, v => setTargets(t => ({ ...t, waterOz: v })))}
+        {numInput('Steps 👟', targets.steps, v => setTargets(t => ({ ...t, steps: v })))}
+      </div>
+
+      {/* Calorie guardrails */}
+      <div className="card">
+        <h2>Calorie guardrails</h2>
+        {numInput('Under-eating alert (% of target)', guardrails.underPercent, v => setGuardrails(g => ({ ...g, underPercent: v })))}
+        {numInput('Over-eating alert (% of target)', guardrails.overPercent, v => setGuardrails(g => ({ ...g, overPercent: v })))}
+      </div>
+
+      {/* Training */}
+      <div className="card">
+        <h2>Workout labels</h2>
+        <div className="label">Session names (comma-separated)</div>
+        <input type="text" value={workoutLabels} onChange={e => setWorkoutLabels(e.target.value)} />
+      </div>
+
+      {/* Notifications */}
+      <div className="card">
+        <h2>Notifications</h2>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>Water reminders (every 2 hours)</div>
+          <button onClick={() => setWaterReminders(r => !r)}
+            style={{ background: waterReminders ? 'var(--green)' : 'var(--bg-input)', border: 'none', borderRadius: 20, padding: '6px 16px', cursor: 'pointer', color: waterReminders ? '#000' : 'var(--text-muted)', fontWeight: 600 }}>
+            {waterReminders ? 'On' : 'Off'}
+          </button>
         </div>
       </div>
 
-      <button className="btn btn-primary" onClick={save} style={{ marginBottom: 8 }}>
+      {/* Scanner */}
+      <div className="card">
+        <h2>Food scanner</h2>
+        <p style={{ marginBottom: 8 }}>API key is set in your Netlify dashboard — never stored in the app.</p>
+        <div style={{ padding: '8px 12px', background: 'var(--bg-input)', borderRadius: 8, fontSize: 14 }}>
+          Scanner: <span style={{ color: 'var(--green)' }}>✅ Ready (when deployed to Netlify)</span>
+        </div>
+      </div>
+
+      {/* Storage warning */}
+      {Number(storageMB) > 4 && (
+        <div className="nudge" style={{ borderColor: 'var(--chili)' }}>
+          ⚠️ Storage almost full ({storageMB} MB / ~5 MB) — consider clearing old logs
+        </div>
+      )}
+
+      <button className="btn btn-primary" onClick={save} style={{ marginBottom: 32 }}>
         {saved ? '✅ Saved!' : 'Save changes'}
       </button>
     </div>
@@ -2627,11 +2821,22 @@ export default function SettingsScreen({ profile, onUpdate, onBack }) {
 }
 ```
 
-- [ ] **Step 2: Commit**
+- [ ] **Step 2: Verify Settings screen in browser**
+
+```bash
+npm run dev
+```
+
+Navigate to Settings (⚙️ icon on Home). Expected:
+- All sections visible: Profile, Units, Daily targets, Guardrails, Workout labels, Notifications, Scanner, Storage
+- Change a target value → tap "Save changes" → tap Back → re-open Settings → value persists
+- Toggle water unit to ml → go to Water tab → tap amount shows ml value
+
+- [ ] **Step 3: Commit**
 
 ```bash
 git add src/screens/SettingsScreen.jsx
-git commit -m "feat: implement Settings screen (The Recipe) with target and guardrail editing"
+git commit -m "feat: implement Settings screen with units, guardrails, notifications, profile edit"
 ```
 
 ---
@@ -2674,17 +2879,23 @@ git push -u origin main
 3. Go to API Keys → Create key
 4. Copy it and paste into the Netlify environment variable from Step 4
 
-- [ ] **Step 6: Test on your phone**
+- [ ] **Step 6: Full end-to-end test on your phone**
 
-1. Open the Netlify URL on your phone (e.g. `https://challo-fit-friend.netlify.app`)
-2. Tap the share icon in Safari → "Add to Home Screen" → this makes it feel like a native app
-3. Run the full test checklist from the spec:
-   - Complete onboarding
-   - Add a second profile
-   - Scan a nutrition label photo
-   - Log a meal
-   - Log water, steps, workout
-   - Log a weigh-in
+Open the Netlify URL on your phone. Tap the share icon in Safari → "Add to Home Screen".
+
+| Action | Expected result |
+|--------|----------------|
+| Complete onboarding | Completion screen shows, then Home screen with your name in greeting |
+| Add second profile via profile switcher | Both names appear; switching shows correct person's data |
+| Scan a nutrition label photo | Confirmation screen shows extracted values; item appears in Food library |
+| Build a meal from 2 library items | Macros on Food tab update correctly (verify math manually) |
+| Log water 3 times | Water progress bar advances; correct oz shown |
+| Enter 10000 steps | Steps progress bar hits 100%; Home card updates |
+| Log a workout | Home card shows ✅; Workout tab shows session name |
+| Log a weigh-in 2 lbs below start | Confetti fires; "2 lbs down" banner appears |
+| Log same milestone weight again | Confetti does NOT fire again |
+| Close and reopen app | All data still present; active profile remembered |
+| Go to Settings → change a target → save | Target reflects on Home screen immediately |
 
 - [ ] **Step 7: Final commit if any fixes needed**
 
