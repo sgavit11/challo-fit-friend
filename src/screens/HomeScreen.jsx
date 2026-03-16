@@ -17,8 +17,8 @@ export default function HomeScreen({ profile, onOpenSettings }) {
   const { log, update } = useDailyLog(profile.id)
   const [stepsInput, setStepsInput] = useState('')
   const greeting = GREETINGS[greetingIndex()](profile.name)
-  const waterPct = Math.min(100, (log.waterOz / profile.targets.waterOz) * 100)
-  const stepsPct = Math.min(100, (log.steps / profile.targets.steps) * 100)
+  const waterPct = profile.targets.waterOz > 0 ? Math.min(100, (log.waterOz / profile.targets.waterOz) * 100) : 0
+  const stepsPct = profile.targets.steps > 0 ? Math.min(100, (log.steps / profile.targets.steps) * 100) : 0
 
   return (
     <div className="screen">
