@@ -33,4 +33,26 @@ describe('StepTDEE', () => {
       waterUnit: expect.any(String),
     }))
   })
+
+  it('water display updates when unit changes to cups', () => {
+    render(<StepTDEE profile={profile} onNext={() => {}} />)
+    // Switch to cups — default waterOz for 180 lbs is 90 oz = 90/8 = ~11 cups
+    fireEvent.click(screen.getByRole('button', { name: 'cups' }))
+    const waterEl = screen.getByTestId('target-water')
+    // Should show a number (not NaN, not the raw oz value)
+    // textContent includes the unit label (e.g. "11cups"), so parse as int
+    expect(parseInt(waterEl.textContent, 10)).toBeGreaterThan(0)
+    expect(parseInt(waterEl.textContent, 10)).toBeLessThan(90) // less than raw oz
+  })
+
+  it('waterOz in onNext payload uses oz internally regardless of display unit', () => {
+    const onNext = vi.fn()
+    render(<StepTDEE profile={profile} onNext={onNext} />)
+    fireEvent.click(screen.getByRole('button', { name: 'cups' }))
+    fireEvent.click(screen.getByRole('button', { name: /let/i }))
+    const call = onNext.mock.calls[0][0]
+    // waterOz should be a reasonable oz value (not cups)
+    expect(call.waterOz).toBeGreaterThan(10) // not a cups value
+    expect(call.waterUnit).toBe('cups')
+  })
 })

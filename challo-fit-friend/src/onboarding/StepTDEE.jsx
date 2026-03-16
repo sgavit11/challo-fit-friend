@@ -7,7 +7,7 @@ import {
 
 const WATER_UNITS = {
   glasses: { label: 'glasses', ozPer: 8 },
-  cups: { label: 'cups', ozPer: 12 },
+  cups: { label: 'cups', ozPer: 8 },
   oz: { label: 'oz', ozPer: 1 },
   ml: { label: 'ml', ozPer: 1 / 29.5735 },
 }
