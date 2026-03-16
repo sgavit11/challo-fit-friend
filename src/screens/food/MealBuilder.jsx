@@ -25,7 +25,7 @@ export default function MealBuilder({ item, onLog, onCancel }) {
           ))}
         </div>
       )}
-      <button className="btn btn-primary" disabled={!valid} onClick={() => onLog({ ...item, quantity: qty, macros })} style={{ marginBottom: 8 }}>
+      <button className="btn btn-primary" disabled={!valid} onClick={() => { if (!valid || !macros) return; onLog({ ...item, quantity: qty, macros }) }} style={{ marginBottom: 8 }}>
         Log to today 🤌
       </button>
       <button className="btn btn-secondary" onClick={onCancel}>Cancel</button>

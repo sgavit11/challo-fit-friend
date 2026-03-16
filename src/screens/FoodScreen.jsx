@@ -59,7 +59,7 @@ export default function FoodScreen({ profile }) {
     return <FoodScanner onSave={(item) => {
       const isFirst = library.length === 0
       addItem(item)
-      showToast(isFirst ? 'First ingredient in — your kitchen is open 👨‍🍳' : `${item.name} saved to library 📚`)
+      if (isFirst) showToast('First ingredient in — your kitchen is open 👨‍🍳')
       setView('main')
     }} onCancel={() => setView('main')} />
   }
