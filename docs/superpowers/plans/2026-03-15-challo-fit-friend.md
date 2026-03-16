@@ -1765,8 +1765,8 @@ export default function HomeScreen({ profile, onOpenSettings }) {
         </button>
       </div>
 
-      {/* Macros summary */}
-      <div className="card" style={{ marginBottom: 12 }}>
+      {/* Macros summary — MacroCard renders its own card wrapper */}
+      <div style={{ marginBottom: 12 }}>
         <div className="label" style={{ marginBottom: 8 }}>Today's macros</div>
         <MacroCard log={log} targets={profile.targets} />
       </div>
@@ -2093,7 +2093,7 @@ import { useState } from 'react'
 import { useDailyLog } from '../hooks/useDailyLog'
 import { useFoodLibrary } from '../hooks/useFoodLibrary'
 import { getDailyLog } from '../storage'
-import { calcWeeklyAverage, todayKey } from '../lib/calculations'
+import { calcWeeklyAverage } from '../lib/calculations'
 import MacroTracker from './food/MacroTracker'
 import FoodLibrary from './food/FoodLibrary'
 import MealBuilder from './food/MealBuilder'
