@@ -14,7 +14,10 @@ export default function MacroCard({ log, targets }) {
         const meta = MACRO_META[key]
         const value = log[key] ?? 0
         const target = targets[key] ?? 0
-        const remaining = Math.max(0, target - value)
+        const diff = target - value
+        const sublabel = diff >= 0
+          ? `${diff} ${meta.unit} left`
+          : `${Math.abs(diff)} ${meta.unit} over`
         return (
           <ProgressBar
             key={key}
@@ -22,7 +25,7 @@ export default function MacroCard({ log, targets }) {
             max={target}
             color={meta.color}
             label={meta.label}
-            sublabel={`${remaining}${meta.unit} left`}
+            sublabel={sublabel}
           />
         )
       })}

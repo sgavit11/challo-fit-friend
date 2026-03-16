@@ -8,10 +8,10 @@ export default function Confetti({ trigger }) {
     if (!trigger) return
     const duration = 2500
     const end = Date.now() + duration
-    // Register food emoji shapes for canvas-confetti
     const shapes = FOOD_EMOJIS.map(emoji =>
       confetti.shapeFromText({ text: emoji, scalar: 2 })
     )
+    let animId
     const frame = () => {
       confetti({
         particleCount: 2,
@@ -29,9 +29,15 @@ export default function Confetti({ trigger }) {
         shapes,
         scalar: 2,
       })
-      if (Date.now() < end) requestAnimationFrame(frame)
+      if (Date.now() < end) {
+        animId = requestAnimationFrame(frame)
+      }
     }
-    frame()
+    animId = requestAnimationFrame(frame)
+    return () => {
+      cancelAnimationFrame(animId)
+      confetti.reset()
+    }
   }, [trigger])
 
   return null

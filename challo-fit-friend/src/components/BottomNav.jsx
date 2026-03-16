@@ -11,23 +11,26 @@ export default function BottomNav({ activeTab, onTabChange }) {
     <nav style={{
       position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
       width: '100%', maxWidth: 430,
-      background: '#111', borderTop: '1px solid #222',
-      display: 'flex', height: 'var(--nav-height)',
+      background: 'var(--bg-card)', borderTop: '1px solid var(--border)',
+      display: 'flex', height: 'calc(var(--nav-height) + env(safe-area-inset-bottom, 0px))',
+      paddingBottom: 'env(safe-area-inset-bottom, 0px)',
       zIndex: 100,
     }}>
       {TABS.map(tab => (
         <button
           key={tab.id}
           onClick={() => onTabChange(tab.id)}
+          aria-current={activeTab === tab.id ? 'page' : undefined}
           style={{
-            flex: 1, display: 'flex', flexDirection: 'column',
+            flex: 1, height: '100%',
+            display: 'flex', flexDirection: 'column',
             alignItems: 'center', justifyContent: 'center',
             background: 'none', border: 'none', cursor: 'pointer',
             color: activeTab === tab.id ? 'var(--saffron)' : 'var(--text-muted)',
             fontSize: 10, gap: 2,
           }}
         >
-          <span style={{ fontSize: 22 }}>{tab.icon}</span>
+          <span aria-hidden="true" style={{ fontSize: 22 }}>{tab.icon}</span>
           {tab.label}
         </button>
       ))}
