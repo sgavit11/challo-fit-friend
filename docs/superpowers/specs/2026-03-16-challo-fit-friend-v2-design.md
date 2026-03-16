@@ -56,7 +56,7 @@ V2 addresses critical bugs, onboarding UX gaps, and a modern animated UI feel. F
 - Headline: *"Based on your stats, here's your plan 👇"*
 - Displays auto-calculated values in read-only cards: Calories, Protein, Fat, Carbs, Water.
 - Each card has a small pencil/edit icon. Tapping opens a `BottomSheet` with a number input.
-- **Water unit selection** is on this screen: a unit toggle (glasses · cups · oz · litres) sits next to the water card. Internally water is always stored in oz; display and input convert accordingly.
+- **Water unit selection** is on this screen: a unit toggle (glasses · cups · oz · ml) sits next to the water card. Internally water is always stored in oz; display and input convert accordingly.
 - After tweaking (or not), user taps "Let's go 🚀" to confirm.
 
 ### calculations.js updates
@@ -131,6 +131,7 @@ V2 addresses critical bugs, onboarding UX gaps, and a modern animated UI feel. F
 | `BottomSheet` | `src/components/BottomSheet.jsx` | Slide-up modal with drag dismiss |
 | `SwipeableCard` | `src/components/SwipeableCard.jsx` | Horizontal swipe with action reveal |
 | `ManualEntryForm` | `src/screens/food/ManualEntryForm.jsx` | Primary food entry form |
+| `StepDOB` | `src/onboarding/StepDOB.jsx` | Date of birth collection |
 
 ### Modified components
 | Component | Path | Change |
@@ -145,11 +146,6 @@ V2 addresses critical bugs, onboarding UX gaps, and a modern animated UI feel. F
 | `FoodLibrary` | `src/screens/food/FoodLibrary.jsx` | Wrap items in SwipeableCard |
 | `calculations` | `src/lib/calculations.js` | Accept dob + sex, update water formula |
 | `useProfile` | `src/hooks/useProfile.js` | Add boot-time integrity check |
-
-### New onboarding step
-| Component | Path | Purpose |
-|-----------|------|---------|
-| `StepDOB` | `src/onboarding/StepDOB.jsx` | Date of birth collection |
 
 ---
 
