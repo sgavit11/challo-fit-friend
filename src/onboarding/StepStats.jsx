@@ -6,7 +6,7 @@ export default function StepStats({ onNext }) {
   const [weightUnit, setWeightUnit] = useState('lbs')
   const [heightUnit, setHeightUnit] = useState('in')
 
-  const valid = weight && height && !isNaN(Number(weight)) && !isNaN(Number(height))
+  const valid = weight && height && !isNaN(Number(weight)) && !isNaN(Number(height)) && Number(weight) > 0 && Number(height) > 0
 
   return (
     <div className="screen" style={{ paddingTop: 48 }}>

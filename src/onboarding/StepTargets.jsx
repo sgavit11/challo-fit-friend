@@ -2,8 +2,18 @@ import { useState } from 'react'
 import { calcCalorieTarget, calcProteinTarget } from '../lib/calculations'
 
 export default function StepTargets({ profile, onNext }) {
-  const defaultCals = calcCalorieTarget({ weight: profile.currentWeight, height: profile.height })
-  const defaultProtein = calcProteinTarget(profile.currentWeight)
+  // Normalize to lbs/inches for Harris-Benedict — profile values could be kg/cm
+  const weightLbs = profile.weightUnit === 'kg'
+    ? (profile.currentWeight ?? 0) / 0.453592
+    : (profile.currentWeight ?? 0)
+  const heightIn = profile.heightUnit === 'cm'
+    ? (profile.height ?? 0) / 2.54
+    : (profile.height ?? 0)
+  const defaultCals = weightLbs > 0 && heightIn > 0
+    ? calcCalorieTarget({ weight: weightLbs, height: heightIn })
+    : 2000
+  const defaultProtein = weightLbs > 0 ? calcProteinTarget(weightLbs) : 150
+
   const [calories, setCalories] = useState(String(defaultCals))
   const [protein, setProtein] = useState(String(defaultProtein))
   const [fat, setFat] = useState('70')
@@ -11,7 +21,7 @@ export default function StepTargets({ profile, onNext }) {
   const [water, setWater] = useState('96')
   const [steps, setSteps] = useState('10000')
 
-  const valid = [calories, protein, fat, carbs, water, steps].every(v => v && !isNaN(Number(v)))
+  const valid = [calories, protein, fat, carbs, water, steps].every(v => v && !isNaN(Number(v)) && Number(v) > 0)
 
   return (
     <div className="screen" style={{ paddingTop: 48 }}>

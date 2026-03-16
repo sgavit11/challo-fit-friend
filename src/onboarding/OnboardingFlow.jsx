@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import StepName from './StepName'
 import StepStats from './StepStats'
 import StepGoal from './StepGoal'
@@ -12,6 +12,14 @@ export default function OnboardingFlow({ onComplete }) {
   const [data, setData] = useState({})
   const [done, setDone] = useState(false)
   const [finalName, setFinalName] = useState('')
+  const [completionProfile, setCompletionProfile] = useState(null)
+
+  // Delay onComplete so the completion screen shows for 1.8s before App switches views
+  useEffect(() => {
+    if (!completionProfile) return
+    const timer = setTimeout(() => onComplete(completionProfile), 1800)
+    return () => clearTimeout(timer)
+  }, [completionProfile, onComplete])
 
   const advance = (updates) => {
     if (step < 4) {
@@ -37,7 +45,7 @@ export default function OnboardingFlow({ onComplete }) {
       }
       setFinalName(data.name)
       setDone(true)
-      onComplete(profile)
+      setCompletionProfile(profile)
     }
   }
 

@@ -10,7 +10,6 @@ export default function ProfileSwitcher({ profiles, onSelect, onAddComplete }) {
         onComplete={(profile) => {
           onAddComplete(profile)
           setAddingNew(false)
-          onSelect(profile.id)
         }}
       />
     )
