@@ -3,7 +3,16 @@ import { getProfiles, saveProfile, deleteProfile, getActiveProfileId, setActiveP
 
 export const useProfile = () => {
   const [profiles, setProfiles] = useState(() => getProfiles())
-  const [activeId, setActiveId] = useState(() => getActiveProfileId())
+  const [activeId, setActiveId] = useState(() => {
+    const id = getActiveProfileId()
+    if (!id) return null
+    const all = getProfiles()
+    if (!all.find(p => p.id === id)) {
+      localStorage.removeItem('cff_active_profile')
+      return null
+    }
+    return id
+  })
 
   const activeProfile = profiles.find(p => p.id === activeId) ?? null
 
