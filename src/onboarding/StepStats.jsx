@@ -1,14 +1,40 @@
 import { useState } from 'react'
-import ScrollPicker from '../components/ScrollPicker'
-
-const LBS_OPTIONS = Array.from({ length: 321 }, (_, i) => String(80 + i))
-const KG_OPTIONS = Array.from({ length: 166 }, (_, i) => String(35 + i))
-const FEET_OPTIONS = ['3', '4', '5', '6', '7']
-const INCHES_OPTIONS = Array.from({ length: 12 }, (_, i) => String(i))
-const CM_OPTIONS = Array.from({ length: 101 }, (_, i) => String(130 + i))
 
 const pillLayout = { flex: 1, padding: '10px 0', borderRadius: 8 }
 const chipClass = (active) => `chip${active ? ' chip-active' : ''}`
+
+const stepBtnStyle = {
+  width: 44, height: 44,
+  borderRadius: 8,
+  border: '1px solid var(--border)',
+  background: 'var(--bg-input)',
+  color: 'var(--text)',
+  fontSize: 20,
+  cursor: 'pointer',
+  display: 'flex', alignItems: 'center', justifyContent: 'center',
+  flexShrink: 0,
+}
+
+function Stepper({ value, onChange, min, max, unit }) {
+  const num = Number(value)
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '44px 1fr 44px', gap: 8, alignItems: 'center' }}>
+      <button style={stepBtnStyle} onClick={() => onChange(String(Math.max(min, num - 1)))}>−</button>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <input
+          type="text"
+          inputMode="decimal"
+          value={value}
+          onChange={e => { if (/^\d*$/.test(e.target.value)) onChange(e.target.value) }}
+          onBlur={() => onChange(String(Math.min(max, Math.max(min, num || min))))}
+          style={{ textAlign: 'center', width: '100%' }}
+        />
+        {unit && <span style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>{unit}</span>}
+      </div>
+      <button style={stepBtnStyle} onClick={() => onChange(String(Math.min(max, num + 1)))}>+</button>
+    </div>
+  )
+}
 
 export default function StepStats({ onNext }) {
   const [isMetric, setIsMetric] = useState(false)
@@ -45,37 +71,24 @@ export default function StepStats({ onNext }) {
       <div className="label">Weight</div>
       <div style={{ marginBottom: 24 }}>
         {isMetric
-          ? <ScrollPicker options={KG_OPTIONS} value={weightKg} onChange={setWeightKg} />
-          : <ScrollPicker options={LBS_OPTIONS} value={weightLbs} onChange={setWeightLbs} />
+          ? <Stepper value={weightKg} onChange={setWeightKg} min={35} max={200} unit="kg" />
+          : <Stepper value={weightLbs} onChange={setWeightLbs} min={80} max={400} unit="lbs" />
         }
-        <div style={{ textAlign: 'center', fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>
-          {isMetric ? `${weightKg} kg` : `${weightLbs} lbs`}
-        </div>
       </div>
 
       <div className="label">Height</div>
       <div style={{ marginBottom: 32 }}>
         {isMetric ? (
-          <>
-            <ScrollPicker options={CM_OPTIONS} value={cm} onChange={setCm} />
-            <div style={{ textAlign: 'center', fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>
-              {cm} cm
-            </div>
-          </>
+          <Stepper value={cm} onChange={setCm} min={130} max={230} unit="cm" />
         ) : (
-          <>
-            <div style={{ display: 'flex', gap: 16 }}>
-              <div style={{ flex: 1 }}>
-                <ScrollPicker options={FEET_OPTIONS} value={feet} onChange={setFeet} />
-              </div>
-              <div style={{ flex: 1 }}>
-                <ScrollPicker options={INCHES_OPTIONS} value={inches} onChange={setInches} />
-              </div>
+          <div style={{ display: 'flex', gap: 16 }}>
+            <div style={{ flex: 1 }}>
+              <Stepper value={feet} onChange={setFeet} min={3} max={7} unit="ft" />
             </div>
-            <div style={{ textAlign: 'center', fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>
-              {feet}' {inches}"
+            <div style={{ flex: 1 }}>
+              <Stepper value={inches} onChange={setInches} min={0} max={11} unit="in" />
             </div>
-          </>
+          </div>
         )}
       </div>
 
