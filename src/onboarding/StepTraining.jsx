@@ -17,12 +17,8 @@ export default function StepTraining({ onNext }) {
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 24 }}>
         {DAYS.map(day => (
           <button key={day} onClick={() => toggleDay(day)}
-            style={{
-              padding: '8px 14px', borderRadius: 20, border: 'none', cursor: 'pointer', fontSize: 14,
-              background: selectedDays.includes(day) ? 'var(--saffron)' : 'var(--bg-input)',
-              color: selectedDays.includes(day) ? '#000' : 'var(--text)',
-              fontWeight: selectedDays.includes(day) ? 600 : 400,
-            }}>
+            className={selectedDays.includes(day) ? 'chip chip-active' : 'chip'}
+            style={{ padding: '8px 14px', borderRadius: 20, fontSize: 14 }}>
             {day.slice(0,3)}
           </button>
         ))}

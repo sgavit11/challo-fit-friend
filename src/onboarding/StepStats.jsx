@@ -7,12 +7,8 @@ const FEET_OPTIONS = ['3', '4', '5', '6', '7']
 const INCHES_OPTIONS = Array.from({ length: 12 }, (_, i) => String(i))
 const CM_OPTIONS = Array.from({ length: 101 }, (_, i) => String(130 + i))
 
-const pillBtn = (active) => ({
-  flex: 1, padding: '10px 0', borderRadius: 8, border: 'none',
-  cursor: 'pointer', fontWeight: 600,
-  background: active ? 'var(--saffron)' : 'var(--bg-input)',
-  color: active ? '#000' : 'var(--text-muted)',
-})
+const pillLayout = { flex: 1, padding: '10px 0', borderRadius: 8 }
+const chipClass = (active) => `chip${active ? ' chip-active' : ''}`
 
 export default function StepStats({ onNext }) {
   const [isMetric, setIsMetric] = useState(false)
@@ -36,14 +32,14 @@ export default function StepStats({ onNext }) {
       <h2>Your current stats</h2>
 
       <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
-        <button style={pillBtn(!isMetric)} onClick={() => setIsMetric(false)}>Imperial</button>
-        <button style={pillBtn(isMetric)} onClick={() => setIsMetric(true)}>Metric</button>
+        <button className={chipClass(!isMetric)} style={pillLayout} onClick={() => setIsMetric(false)}>Imperial</button>
+        <button className={chipClass(isMetric)} style={pillLayout} onClick={() => setIsMetric(true)}>Metric</button>
       </div>
 
       <div className="label">Sex</div>
       <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
-        <button style={pillBtn(sex === 'm')} onClick={() => setSex('m')} aria-label="Male">Male</button>
-        <button style={pillBtn(sex === 'f')} onClick={() => setSex('f')} aria-label="Female">Female</button>
+        <button className={chipClass(sex === 'm')} style={pillLayout} onClick={() => setSex('m')} aria-label="Male">Male</button>
+        <button className={chipClass(sex === 'f')} style={pillLayout} onClick={() => setSex('f')} aria-label="Female">Female</button>
       </div>
 
       <div className="label">Weight</div>

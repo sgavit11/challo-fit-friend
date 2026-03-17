@@ -104,12 +104,9 @@ export default function StepTDEE({ profile, onNext }) {
         </div>
         <div style={{ display: 'flex', gap: 6, marginTop: 12 }}>
           {Object.keys(WATER_UNITS).map(u => (
-            <button key={u} onClick={() => setWaterUnit(u)} style={{
-              flex: 1, padding: '6px 0', borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: 12,
-              background: waterUnit === u ? 'var(--saffron)' : 'var(--bg-input)',
-              color: waterUnit === u ? '#000' : 'var(--text-muted)',
-              fontWeight: waterUnit === u ? 700 : 400,
-            }}>
+            <button key={u} onClick={() => setWaterUnit(u)}
+              className={waterUnit === u ? 'chip chip-active' : 'chip'}
+              style={{ flex: 1, padding: '6px 0', borderRadius: 6, fontSize: 12 }}>
               {u}
             </button>
           ))}

@@ -132,6 +132,23 @@ p { color: var(--text-secondary); font-size: 14px; line-height: 1.55; }
   margin-bottom: 12px;
 }
 
+/* Chip / pill toggle buttons — used in StepStats, StepTraining, StepTDEE */
+.chip {
+  background: var(--bg-input);
+  color: var(--text-muted);
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 400;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.chip-active {
+  background: var(--primary-tint);
+  border-color: var(--primary);
+  color: var(--primary);
+  font-weight: 600;
+}
+
 .label {
   font-size: 11px;
   font-weight: 600;
