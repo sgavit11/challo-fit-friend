@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useProfile } from './hooks/useProfile'
+import { useAuth } from './hooks/useAuth'
 import BottomNav from './components/BottomNav'
 import OnboardingFlow from './onboarding/OnboardingFlow'
 import ProfileSwitcher from './onboarding/ProfileSwitcher'
@@ -10,6 +11,7 @@ import WaterScreen from './screens/WaterScreen'
 import ProgressScreen from './screens/ProgressScreen'
 import WorkoutScreen from './screens/WorkoutScreen'
 import SettingsScreen from './screens/SettingsScreen'
+import AuthScreen from './screens/AuthScreen'
 
 const pageVariants = {
   initial: { x: '100%', opacity: 0 },
@@ -19,6 +21,7 @@ const pageVariants = {
 
 export default function App() {
   const { profiles, activeProfile, addOrUpdateProfile, removeProfile, switchProfile } = useProfile()
+  const { session, loading: authLoading } = useAuth()
   const [tab, setTab] = useState('home')
   const [showSettings, setShowSettings] = useState(false)
 
@@ -53,7 +56,7 @@ export default function App() {
   const screenProps = { profile: activeProfile, onOpenSettings: () => setShowSettings(true) }
   const SCREENS = {
     home: <HomeScreen {...screenProps} />,
-    food: <FoodScreen {...screenProps} />,
+    food: !authLoading && !session ? <AuthScreen /> : <FoodScreen {...screenProps} />,
     water: <WaterScreen {...screenProps} />,
     progress: <ProgressScreen {...screenProps} />,
     workout: <WorkoutScreen {...screenProps} />,
