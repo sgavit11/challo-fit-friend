@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { getDailyLog, updateDailyLog } from '../storage'
+import { getDailyLog, updateDailyLog, addWaterEntry, removeWaterEntry } from '../storage'
 import { todayKey } from '../lib/calculations'
 
 export const useDailyLog = (profileId) => {
@@ -26,5 +26,17 @@ export const useDailyLog = (profileId) => {
     setLog(getDailyLog(profileId, today))
   }, [profileId])
 
-  return { log, update, logMeal }
+  const logWater = useCallback((entry) => {
+    const today = todayKey()
+    addWaterEntry(profileId, today, entry)
+    setLog(getDailyLog(profileId, today))
+  }, [profileId])
+
+  const deleteWaterEntry = useCallback((entryId) => {
+    const today = todayKey()
+    removeWaterEntry(profileId, today, entryId)
+    setLog(getDailyLog(profileId, today))
+  }, [profileId])
+
+  return { log, update, logMeal, logWater, deleteWaterEntry }
 }

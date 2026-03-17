@@ -54,7 +54,7 @@ export const deleteFoodItem = (id) => {
 // --- Daily logs ---
 const EMPTY_LOG = () => ({
   calories: 0, protein: 0, fat: 0, carbs: 0,
-  waterOz: 0, steps: 0,
+  waterOz: 0, waterEntries: [], steps: 0,
   workoutLogged: false, workoutLabel: null,
   meals: [],
 })
@@ -68,6 +68,27 @@ export const updateDailyLog = (profileId, date, updates) => {
   const logs = read(KEYS.DAILY_LOGS, {})
   const key = `${profileId}_${date}`
   logs[key] = { ...(logs[key] ?? EMPTY_LOG()), ...updates }
+  write(KEYS.DAILY_LOGS, logs)
+}
+
+// --- Water entries ---
+export const addWaterEntry = (profileId, date, entry) => {
+  const logs = read(KEYS.DAILY_LOGS, {})
+  const key = `${profileId}_${date}`
+  const current = logs[key] ?? EMPTY_LOG()
+  const entries = [...(current.waterEntries ?? []), entry]
+  const waterOz = entries.reduce((sum, e) => sum + e.oz, 0)
+  logs[key] = { ...current, waterEntries: entries, waterOz }
+  write(KEYS.DAILY_LOGS, logs)
+}
+
+export const removeWaterEntry = (profileId, date, entryId) => {
+  const logs = read(KEYS.DAILY_LOGS, {})
+  const key = `${profileId}_${date}`
+  const current = logs[key] ?? EMPTY_LOG()
+  const entries = (current.waterEntries ?? []).filter(e => e.id !== entryId)
+  const waterOz = entries.reduce((sum, e) => sum + e.oz, 0)
+  logs[key] = { ...current, waterEntries: entries, waterOz }
   write(KEYS.DAILY_LOGS, logs)
 }
 

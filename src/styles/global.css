@@ -9,6 +9,10 @@
   --primary-gradient: linear-gradient(135deg, #2DD4BF, #38BDF8);
   --primary-tint: rgba(45, 212, 191, 0.10);
   --primary-glow: rgba(45, 212, 191, 0.28);
+  --water: #38BDF8;
+  --water-deep: #0EA5E9;
+  --water-tint: rgba(56, 189, 248, 0.12);
+  --water-glow: rgba(56, 189, 248, 0.3);
   --chili: #F87171;
   --green: #6EE7B7;
   --blue: #7DD3FC;
