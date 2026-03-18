@@ -35,8 +35,25 @@ export default function RecipeLibrary({ onBuild }) {
       </div>
 
       {loading ? (
-        <div style={{ color: 'var(--text-muted)', fontSize: 14, textAlign: 'center', padding: 32 }}>
-          Loading…
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {[0, 1, 2].map(i => (
+            <div key={i} style={{
+              display: 'flex', gap: 12,
+              background: 'var(--bg-card)', border: '1px solid var(--border)',
+              borderRadius: 'var(--radius)', padding: 12,
+            }}>
+              <div style={{ width: 64, height: 64, borderRadius: 'var(--radius-sm)', background: 'var(--bg-card-2)', flexShrink: 0, animation: 'pulse 1.4s ease-in-out infinite' }} />
+              <div style={{ flex: 1 }}>
+                <div style={{ height: 14, width: '55%', background: 'var(--bg-card-2)', borderRadius: 4, marginBottom: 8, animation: 'pulse 1.4s ease-in-out infinite' }} />
+                <div style={{ height: 10, width: '80%', background: 'var(--bg-card-2)', borderRadius: 4, marginBottom: 10, animation: 'pulse 1.4s ease-in-out 0.15s infinite' }} />
+                <div style={{ display: 'flex', gap: 6 }}>
+                  {[0, 1, 2, 3].map(j => (
+                    <div key={j} style={{ height: 20, width: 44, borderRadius: 20, background: 'var(--bg-card-2)', animation: 'pulse 1.4s ease-in-out 0.3s infinite' }} />
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       ) : filtered.length === 0 && !search.trim() ? (
         <div className="empty-state">

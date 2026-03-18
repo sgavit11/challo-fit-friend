@@ -111,7 +111,33 @@ export default function DailyLogView() {
       </h2>
 
       {loading ? (
-        <div style={{ color: 'var(--text-muted)', fontSize: 14, padding: '12px 0' }}>Loading…</div>
+        // Skeleton rows
+        <div style={{
+          background: 'var(--bg-card)', border: '1px solid var(--border)',
+          borderRadius: 'var(--radius)', padding: '4px 16px',
+          marginBottom: 12,
+        }}>
+          {[0, 1].map(i => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 0', borderBottom: i === 0 ? '1px solid var(--border)' : 'none' }}>
+              <div style={{ width: 44, height: 44, borderRadius: 'var(--radius-sm)', background: 'var(--bg-card-2)', flexShrink: 0, animation: 'pulse 1.4s ease-in-out infinite' }} />
+              <div style={{ flex: 1 }}>
+                <div style={{ height: 12, width: '60%', background: 'var(--bg-card-2)', borderRadius: 4, marginBottom: 6, animation: 'pulse 1.4s ease-in-out infinite' }} />
+                <div style={{ height: 10, width: '40%', background: 'var(--bg-card-2)', borderRadius: 4, animation: 'pulse 1.4s ease-in-out 0.2s infinite' }} />
+              </div>
+              <div style={{ height: 16, width: 32, background: 'var(--bg-card-2)', borderRadius: 4, animation: 'pulse 1.4s ease-in-out infinite' }} />
+            </div>
+          ))}
+        </div>
+      ) : error ? (
+        <div style={{
+          color: 'var(--chili)', fontSize: 13,
+          padding: '12px 14px', marginBottom: 12,
+          background: 'rgba(248,113,113,0.08)',
+          borderRadius: 'var(--radius-sm)',
+          border: '1px solid rgba(248,113,113,0.2)',
+        }}>
+          {error}
+        </div>
       ) : entries.length > 0 ? (
         <div style={{
           background: 'var(--bg-card)', border: '1px solid var(--border)',
@@ -173,10 +199,20 @@ export default function DailyLogView() {
         </div>
       ) : (
         <div style={{
-          color: 'var(--text-muted)', fontSize: 14,
-          padding: '12px 0', marginBottom: 8,
+          display: 'flex', flexDirection: 'column', alignItems: 'center',
+          padding: '32px 16px', gap: 8, textAlign: 'center', marginBottom: 8,
         }}>
-          No meals logged yet.
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.4 }}>
+            <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/>
+            <line x1="7" y1="2" x2="7" y2="22"/>
+            <path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/>
+          </svg>
+          <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 600, color: 'var(--text)' }}>
+            No meals logged yet
+          </div>
+          <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+            Tap "Add Meal" to log your first entry.
+          </div>
         </div>
       )}
 
