@@ -36,9 +36,9 @@ export default function AuthScreen({ onSuccess }) {
     <div className="screen" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '100dvh', paddingBottom: 32 }}>
       <div style={{ marginBottom: 32 }}>
         <h1 style={{ marginBottom: 4 }}>
-          {mode === 'login' ? 'Welcome back' : 'Create account'}
+          {mode === 'login' ? 'Welcome back' : 'Create your account'}
         </h1>
-        <p>{mode === 'login' ? 'Sign in to access your food log.' : 'Track your food across devices.'}</p>
+        <p>{mode === 'login' ? 'Sign in to pick up where you left off.' : 'Track food, water, workouts and progress — all in one place.'}</p>
       </div>
 
       <button

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { exportAllData, importAllData, getActiveProfileId } from '../storage'
+import { useAuth } from '../hooks/useAuth'
 
 const getStorageUsedMB = () => {
   let total = 0
@@ -10,6 +11,7 @@ const getStorageUsedMB = () => {
 }
 
 export default function SettingsScreen({ profile, onUpdate, onBack }) {
+  const { signOut } = useAuth()
   const [targets, setTargets] = useState({ ...profile.targets })
   const [guardrails, setGuardrails] = useState({ ...profile.calorieGuardrails })
   const [weightUnit, setWeightUnit] = useState(profile.weightUnit || 'lbs')
@@ -217,8 +219,16 @@ export default function SettingsScreen({ profile, onUpdate, onBack }) {
         </div>
       )}
 
-      <button className="btn btn-primary" onClick={save} style={{ marginBottom: 32 }}>
+      <button className="btn btn-primary" onClick={save} style={{ marginBottom: 12 }}>
         {saved ? '✅ Saved!' : 'Save changes'}
+      </button>
+
+      <button
+        className="btn btn-secondary"
+        onClick={signOut}
+        style={{ marginBottom: 32, color: 'var(--chili)', borderColor: 'rgba(248,113,113,0.3)' }}
+      >
+        Sign out
       </button>
     </div>
   )
