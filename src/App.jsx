@@ -6,7 +6,7 @@ import BottomNav from './components/BottomNav'
 import OnboardingFlow from './onboarding/OnboardingFlow'
 import ProfileSwitcher from './onboarding/ProfileSwitcher'
 import HomeScreen from './screens/HomeScreen'
-import FoodScreen from './screens/FoodScreen'
+import FoodTab from './components/food/FoodTab'
 import WaterScreen from './screens/WaterScreen'
 import ProgressScreen from './screens/ProgressScreen'
 import WorkoutScreen from './screens/WorkoutScreen'
@@ -56,7 +56,7 @@ export default function App() {
   const screenProps = { profile: activeProfile, onOpenSettings: () => setShowSettings(true) }
   const SCREENS = {
     home: <HomeScreen {...screenProps} />,
-    food: !authLoading && !session ? <AuthScreen /> : <FoodScreen {...screenProps} />,
+    food: !authLoading && !session ? <AuthScreen /> : <FoodTab />,
     water: <WaterScreen {...screenProps} />,
     progress: <ProgressScreen {...screenProps} />,
     workout: <WorkoutScreen {...screenProps} />,
