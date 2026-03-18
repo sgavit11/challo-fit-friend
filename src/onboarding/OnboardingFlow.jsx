@@ -86,6 +86,15 @@ export default function OnboardingFlow({ onComplete }) {
         <h1>You're all set {finalName}.</h1>
         <p style={{ marginTop: 8 }}>Your journey starts now.</p>
         <p style={{ marginTop: 4, color: 'var(--saffron)', fontWeight: 600 }}>Challo let's go 🍽️🔥</p>
+        {completionProfile && (
+          <button
+            className="btn btn-primary"
+            style={{ marginTop: 32 }}
+            onClick={() => onComplete(completionProfile)}
+          >
+            Continue →
+          </button>
+        )}
       </div>
     )
   }

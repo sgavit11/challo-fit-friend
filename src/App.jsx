@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useProfile } from './hooks/useProfile'
 import { useAuth } from './hooks/useAuth'
@@ -25,16 +25,17 @@ export default function App() {
   const [tab, setTab] = useState('home')
   const [showSettings, setShowSettings] = useState(false)
 
+  const handleOnboardingComplete = useCallback((profile) => {
+    addOrUpdateProfile(profile)
+    switchProfile(profile.id)
+  }, [addOrUpdateProfile, switchProfile])
+
   // Auth gate — universal, shown before everything else
   if (authLoading) return null
   if (!session) return <AuthScreen />
 
   if (profiles.length === 0) {
-    return (
-      <OnboardingFlow
-        onComplete={(profile) => { addOrUpdateProfile(profile); switchProfile(profile.id) }}
-      />
-    )
+    return <OnboardingFlow onComplete={handleOnboardingComplete} />
   }
 
   if (!activeProfile) {
