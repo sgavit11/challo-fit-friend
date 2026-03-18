@@ -94,9 +94,9 @@ In App.jsx: when `tab === 'food'` and no session → render `<AuthScreen />` ins
 | B1 | P1 bugs: steppers for weight/height/goal weight · date input consistency · Workout Split presets | ✅ done |
 | B2 | WaterScreen visual overhaul (arc ring · unit chips · quick-add · stepper · streak · keep-logging) | ✅ done |
 | B3 | useRecipes · RecipeBuilder · RecipeCard · RecipeLibrary · PhotoUpload · FoodTab wiring | ✅ done |
-| C | useDailyLog · DailyLogView · MacroRings | — |
-| D | AnalyticsView + fetchLogRange in useDailyLog · Progress screen time range toggles + color fixes + weekly rate insight | — |
-| E | Polish: empty states, loading skeletons, error handling, mobile | — |
+| C | useDailyLog · DailyLogView · MacroRings | ✅ done |
+| D | AnalyticsView + fetchLogRange in useDailyLog · Progress screen time range toggles + color fixes + weekly rate insight | ✅ done |
+| E | Polish: empty states, loading skeletons, error handling, mobile | ✅ done |
 
 ## Bug & UX Issue Log (V3)
 

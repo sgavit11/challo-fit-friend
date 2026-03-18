@@ -1,5 +1,5 @@
 export const scanLabel = async (imageBase64, mediaType = 'image/jpeg') => {
-  const res = await fetch('/.netlify/functions/claude-vision', {
+  const res = await fetch('/api/claude-vision', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ imageBase64, mediaType }),
