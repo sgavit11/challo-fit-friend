@@ -41,7 +41,7 @@ export default function DailyLogView() {
   const [showPicker, setShowPicker] = useState(false)
   const [adding, setAdding] = useState(null) // recipe id being added
 
-  const dateStrip = useMemo(() => buildDateStrip(), [])
+  const dateStrip = buildDateStrip()
   const { entries, totals, loading, addEntry, removeEntry } = useFoodLog(selectedDate)
   const { recipes, loading: recipesLoading } = useRecipes()
   const { activeProfile } = useProfile()
