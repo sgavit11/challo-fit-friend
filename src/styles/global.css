@@ -91,7 +91,9 @@ body {
 
 input[type="text"],
 input[type="number"],
-input[type="date"] {
+input[type="date"],
+input[type="email"],
+input[type="password"] {
   width: 100%;
   background: var(--bg-input);
   border: 1px solid var(--border);
