@@ -85,5 +85,17 @@ export function useRecipes() {
     return { error }
   }
 
-  return { recipes, loading, error, addRecipe, deleteRecipe, refetch }
+  const updateRecipe = async (id, { name, notes, photo_url }) => {
+    const { data, error } = await supabase
+      .from('recipes')
+      .update({ name, notes: notes || null, photo_url: photo_url || null })
+      .eq('id', id)
+      .select()
+      .single()
+    if (error) return { error: error.message }
+    setRecipes(prev => prev.map(r => r.id === id ? { ...r, ...data } : r))
+    return { data }
+  }
+
+  return { recipes, loading, error, addRecipe, deleteRecipe, updateRecipe, refetch }
 }

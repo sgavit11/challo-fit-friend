@@ -1,14 +1,21 @@
 import { useState } from 'react'
 import { useRecipes } from '../../hooks/useRecipes'
 import RecipeCard from './RecipeCard'
+import BottomSheet from '../BottomSheet'
+import PhotoUpload from './PhotoUpload'
 
 /**
  * Props:
  *   onBuild — called when user taps "Build a new recipe"
  */
 export default function RecipeLibrary({ onBuild }) {
-  const { recipes, loading, deleteRecipe } = useRecipes()
+  const { recipes, loading, deleteRecipe, updateRecipe } = useRecipes()
   const [search, setSearch] = useState('')
+  const [editingRecipe, setEditingRecipe] = useState(null)
+  const [editName, setEditName] = useState('')
+  const [editNotes, setEditNotes] = useState('')
+  const [editPhoto, setEditPhoto] = useState('')
+  const [saving, setSaving] = useState(false)
 
   const filtered = search.trim()
     ? recipes.filter(r => r.name.toLowerCase().includes(search.toLowerCase()))
@@ -73,9 +80,46 @@ export default function RecipeLibrary({ onBuild }) {
             key={recipe.id}
             recipe={recipe}
             onDelete={deleteRecipe}
+            onEdit={() => {
+              setEditingRecipe(recipe)
+              setEditName(recipe.name)
+              setEditNotes(recipe.notes || '')
+              setEditPhoto(recipe.photo_url || '')
+            }}
           />
         ))
       )}
+
+      <BottomSheet
+        isOpen={!!editingRecipe}
+        onClose={() => setEditingRecipe(null)}
+        title="Edit Recipe"
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div>
+            <div className="label">Name</div>
+            <input value={editName} onChange={e => setEditName(e.target.value)} />
+          </div>
+          <div>
+            <div className="label">Notes</div>
+            <textarea value={editNotes} onChange={e => setEditNotes(e.target.value)}
+              style={{ width: '100%', minHeight: 72, resize: 'vertical' }} />
+          </div>
+          <PhotoUpload value={editPhoto} onChange={setEditPhoto} />
+          <button
+            className="btn btn-primary"
+            disabled={saving || !editName.trim()}
+            onClick={async () => {
+              setSaving(true)
+              await updateRecipe(editingRecipe.id, { name: editName, notes: editNotes, photo_url: editPhoto })
+              setSaving(false)
+              setEditingRecipe(null)
+            }}
+          >
+            {saving ? 'Saving…' : 'Save'}
+          </button>
+        </div>
+      </BottomSheet>
 
       {/* Build new card */}
       {!loading && (

@@ -3,12 +3,6 @@ import MacroRings from './MacroRings'
 import { useFoodLog } from '../../hooks/useFoodLog'
 import { useRecipes } from '../../hooks/useRecipes'
 import { useProfile } from '../../hooks/useProfile'
-import {
-  calcCalorieTarget,
-  calcProteinTarget,
-  calcFatTarget,
-  calcCarbTarget,
-} from '../../lib/calculations'
 import { sumMacros, scaleMacros } from '../../utils/macros'
 
 // Build last-7-days array: [{ dateStr, dayLabel, num }], today last
@@ -48,12 +42,9 @@ export default function DailyLogView() {
 
   // Derive macro targets from profile
   const targets = useMemo(() => {
-    if (!activeProfile) return { calories: 2000, protein: 150, carbs: 200, fat: 65 }
-    const cal = calcCalorieTarget(activeProfile)
-    const pro = calcProteinTarget(activeProfile.weight ?? 160)
-    const fat = calcFatTarget(cal)
-    const carb = calcCarbTarget(cal, pro, fat)
-    return { calories: cal, protein: pro, carbs: carb, fat }
+    if (!activeProfile?.targets) return { calories: 2000, protein: 150, carbs: 200, fat: 65 }
+    const { calories, protein, carbs, fat } = activeProfile.targets
+    return { calories, protein, carbs, fat }
   }, [activeProfile])
 
   async function handleAddMeal(recipe) {

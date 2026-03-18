@@ -5,8 +5,9 @@ import { scaleMacros, sumMacros } from '../../utils/macros'
  *   recipe     — recipe object with recipe_ingredients[]{ingredient, quantity}
  *   onPress    — called with recipe when tapped
  *   onDelete   — called with recipe.id when delete tapped
+ *   onEdit     — called with recipe when edit tapped
  */
-export default function RecipeCard({ recipe, onPress, onDelete }) {
+export default function RecipeCard({ recipe, onPress, onDelete, onEdit }) {
   const totals = sumMacros(
     (recipe.recipe_ingredients ?? []).map(ri => scaleMacros(ri.ingredient, ri.quantity))
   )
@@ -72,19 +73,28 @@ export default function RecipeCard({ recipe, onPress, onDelete }) {
         </div>
       </div>
 
-      {/* Delete */}
-      {onDelete && (
-        <button
-          onClick={e => { e.stopPropagation(); onDelete(recipe.id) }}
-          style={{
-            position: 'absolute', top: 8, right: 8,
-            width: 24, height: 24, borderRadius: '50%',
-            background: 'rgba(248,113,113,0.1)', border: 'none',
-            color: 'var(--chili)', fontSize: 14,
-            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}
-        >×</button>
-      )}
+      {/* Edit & Delete */}
+      <div style={{ position: 'absolute', top: 8, right: 8, display: 'flex', gap: 4 }}>
+        {onEdit && (
+          <button
+            onClick={e => { e.stopPropagation(); onEdit(recipe) }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 4 }}
+          >
+            ✏️
+          </button>
+        )}
+        {onDelete && (
+          <button
+            onClick={e => { e.stopPropagation(); onDelete(recipe.id) }}
+            style={{
+              width: 24, height: 24, borderRadius: '50%',
+              background: 'rgba(248,113,113,0.1)', border: 'none',
+              color: 'var(--chili)', fontSize: 14,
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
+          >×</button>
+        )}
+      </div>
     </div>
   )
 }

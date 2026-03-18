@@ -46,6 +46,20 @@ export function useIngredients() {
     return { error }
   }
 
+  const updateIngredient = async (id, fields) => {
+    const { data, error } = await supabase
+      .from('ingredients')
+      .update(fields)
+      .eq('id', id)
+      .select()
+      .single()
+    if (error) return { error }
+    setIngredients(prev =>
+      prev.map(i => i.id === id ? data : i)
+    )
+    return { data }
+  }
+
   const searchIngredients = useCallback(
     (query) => {
       if (!query?.trim()) return ingredients
@@ -55,5 +69,5 @@ export function useIngredients() {
     [ingredients]
   )
 
-  return { ingredients, loading, error, addIngredient, deleteIngredient, searchIngredients, refetch }
+  return { ingredients, loading, error, addIngredient, deleteIngredient, updateIngredient, searchIngredients, refetch }
 }

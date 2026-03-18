@@ -94,12 +94,14 @@ function MacroStepper({ macroKey, label, unit, color, dotStyle, value, onChange 
 }
 
 export default function IngredientLibrary({ onBack }) {
-  const { ingredients, loading, addIngredient, deleteIngredient } = useIngredients()
+  const { ingredients, loading, addIngredient, deleteIngredient, updateIngredient } = useIngredients()
   const [search, setSearch] = useState('')
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
   const [formError, setFormError] = useState(null)
+  const [editingId, setEditingId] = useState(null)
+  const [editForm, setEditForm] = useState({})
 
   const filtered = search.trim()
     ? ingredients.filter(i => i.name.toLowerCase().includes(search.toLowerCase()))
@@ -336,42 +338,166 @@ export default function IngredientLibrary({ onBack }) {
                 <div
                   key={ing.id}
                   style={{
-                    display: 'flex', alignItems: 'center', gap: 12,
                     padding: '12px 0',
                     borderBottom: idx < filtered.length - 1 ? '1px solid var(--border)' : 'none',
                   }}
                 >
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 4 }}>
-                      {ing.name}
+                  {editingId === ing.id ? (
+                    /* ── Inline edit form ── */
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      <div className="field" style={{ marginBottom: 0 }}>
+                        <div className="label">Name</div>
+                        <input
+                          type="text"
+                          value={editForm.name}
+                          onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))}
+                        />
+                      </div>
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <div className="field" style={{ flex: 1, marginBottom: 0 }}>
+                          <div className="label">Serving</div>
+                          <input
+                            type="number"
+                            value={editForm.serving_size}
+                            onChange={e => setEditForm(f => ({ ...f, serving_size: e.target.value }))}
+                          />
+                        </div>
+                        <div className="field" style={{ flex: 1, marginBottom: 0 }}>
+                          <div className="label">Calories</div>
+                          <input
+                            type="number"
+                            value={editForm.calories}
+                            onChange={e => setEditForm(f => ({ ...f, calories: e.target.value }))}
+                          />
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <div className="field" style={{ flex: 1, marginBottom: 0 }}>
+                          <div className="label">Protein (g)</div>
+                          <input
+                            type="number"
+                            value={editForm.protein}
+                            onChange={e => setEditForm(f => ({ ...f, protein: e.target.value }))}
+                          />
+                        </div>
+                        <div className="field" style={{ flex: 1, marginBottom: 0 }}>
+                          <div className="label">Carbs (g)</div>
+                          <input
+                            type="number"
+                            value={editForm.carbs}
+                            onChange={e => setEditForm(f => ({ ...f, carbs: e.target.value }))}
+                          />
+                        </div>
+                        <div className="field" style={{ flex: 1, marginBottom: 0 }}>
+                          <div className="label">Fat (g)</div>
+                          <input
+                            type="number"
+                            value={editForm.fat}
+                            onChange={e => setEditForm(f => ({ ...f, fat: e.target.value }))}
+                          />
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+                        <button
+                          onClick={async () => {
+                            const result = await updateIngredient(editingId, {
+                              name:         editForm.name,
+                              serving_size: parseFloat(editForm.serving_size) || 1,
+                              calories:     parseFloat(editForm.calories)     || 0,
+                              protein:      parseFloat(editForm.protein)      || 0,
+                              carbs:        parseFloat(editForm.carbs)        || 0,
+                              fat:          parseFloat(editForm.fat)          || 0,
+                            })
+                            if (result?.error) {
+                              alert('Failed to save: ' + (result.error.message || result.error))
+                              return
+                            }
+                            setEditingId(null)
+                          }}
+                          style={{
+                            flex: 1,
+                            background: 'var(--primary-tint)',
+                            border: '1px solid rgba(45,212,191,0.3)',
+                            color: 'var(--primary)',
+                            borderRadius: 'var(--radius-sm)',
+                            padding: '8px 0',
+                            fontSize: 13, fontWeight: 600,
+                            cursor: 'pointer',
+                            fontFamily: "'DM Sans', sans-serif",
+                          }}
+                        >
+                          Save
+                        </button>
+                        <button
+                          onClick={() => setEditingId(null)}
+                          style={{
+                            flex: 1,
+                            background: 'var(--bg-card-2)',
+                            border: '1px solid var(--border)',
+                            color: 'var(--text-muted)',
+                            borderRadius: 'var(--radius-sm)',
+                            padding: '8px 0',
+                            fontSize: 13, fontWeight: 600,
+                            cursor: 'pointer',
+                            fontFamily: "'DM Sans', sans-serif",
+                          }}
+                        >
+                          Cancel
+                        </button>
+                      </div>
                     </div>
-                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                      <span className="tag tag-cal">{ing.calories} kcal</span>
-                      <span className="tag tag-pro">P {ing.protein}g</span>
-                      <span className="tag tag-carb">C {ing.carbs}g</span>
-                      <span className="tag tag-fat">F {ing.fat}g</span>
+                  ) : (
+                    /* ── Normal row ── */
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 4 }}>
+                          {ing.name}
+                        </div>
+                        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                          <span className="tag tag-cal">{ing.calories} kcal</span>
+                          <span className="tag tag-pro">P {ing.protein}g</span>
+                          <span className="tag tag-carb">C {ing.carbs}g</span>
+                          <span className="tag tag-fat">F {ing.fat}g</span>
+                        </div>
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
+                          per {ing.serving_size} {ing.serving_unit}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setEditingId(ing.id)
+                          setEditForm({
+                            name:         ing.name,
+                            serving_size: ing.serving_size,
+                            calories:     ing.calories,
+                            protein:      ing.protein,
+                            carbs:        ing.carbs,
+                            fat:          ing.fat,
+                          })
+                        }}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '4px 6px' }}
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        onClick={() => deleteIngredient(ing.id)}
+                        style={{
+                          width: 28, height: 28, borderRadius: '50%',
+                          background: 'rgba(248,113,113,0.1)', border: 'none',
+                          color: 'var(--chili)', fontSize: 14,
+                          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}
+                      >
+                        <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2"
+                          strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                          <polyline points="3 6 5 6 21 6"/>
+                          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                          <path d="M10 11v6M14 11v6"/>
+                          <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                        </svg>
+                      </button>
                     </div>
-                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
-                      per {ing.serving_size} {ing.serving_unit}
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => deleteIngredient(ing.id)}
-                    style={{
-                      width: 28, height: 28, borderRadius: '50%',
-                      background: 'rgba(248,113,113,0.1)', border: 'none',
-                      color: 'var(--chili)', fontSize: 14,
-                      cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    }}
-                  >
-                    <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2"
-                      strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                      <polyline points="3 6 5 6 21 6"/>
-                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                      <path d="M10 11v6M14 11v6"/>
-                      <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-                    </svg>
-                  </button>
+                  )}
                 </div>
               ))}
             </div>

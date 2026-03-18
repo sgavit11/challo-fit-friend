@@ -23,6 +23,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 import { sumMacros, scaleMacros } from '../utils/macros'
+import { getActiveProfileId, updateDailyLog } from '../storage'
 
 export function useFoodLog(dateStr) {
   // dateStr: 'YYYY-MM-DD'
@@ -52,6 +53,18 @@ export function useFoodLog(dateStr) {
 
   useEffect(() => { refetch() }, [refetch])
 
+  const syncToLocalStorage = useCallback((updatedEntries, date) => {
+    const profileId = getActiveProfileId()
+    if (!profileId) return
+    const totals = sumMacros(updatedEntries)
+    updateDailyLog(profileId, date, {
+      calories: totals.calories,
+      protein: totals.protein,
+      carbs: totals.carbs,
+      fat: totals.fat,
+    })
+  }, [])
+
   // Add a recipe as a meal entry (macros calculated from recipe_ingredients)
   const addEntry = useCallback(async (recipe) => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -80,18 +93,24 @@ export function useFoodLog(dateStr) {
       .single()
 
     if (error) return { error: error.message }
-    setEntries(prev => [...prev, data])
+    const updatedEntries = [...entries, data]
+    setEntries(updatedEntries)
+    syncToLocalStorage(updatedEntries, dateStr)
     return { data }
-  }, [dateStr])
+  }, [dateStr, entries, syncToLocalStorage])
 
   const removeEntry = useCallback(async (id) => {
     const { error } = await supabase
       .from('daily_log')
       .delete()
       .eq('id', id)
-    if (!error) setEntries(prev => prev.filter(e => e.id !== id))
+    if (!error) {
+      const updatedEntries = entries.filter(e => e.id !== id)
+      setEntries(updatedEntries)
+      syncToLocalStorage(updatedEntries, dateStr)
+    }
     return { error }
-  }, [])
+  }, [entries, dateStr, syncToLocalStorage])
 
   // Totals for the day
   const totals = sumMacros(entries)
