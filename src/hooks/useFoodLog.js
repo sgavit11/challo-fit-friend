@@ -98,3 +98,40 @@ export function useFoodLog(dateStr) {
 
   return { entries, totals, loading, error, addEntry, removeEntry, refetch }
 }
+
+/**
+ * Fetch and aggregate daily_log rows for a date range.
+ * @param {string} startDate — 'YYYY-MM-DD'
+ * @param {string} endDate   — 'YYYY-MM-DD'
+ * @returns {{ data: Array<{log_date, total_calories, total_protein, total_carbs, total_fat}>, error: string|null }}
+ */
+export async function fetchLogRange(startDate, endDate) {
+  const { data, error } = await supabase
+    .from('daily_log')
+    .select('log_date, calories, protein, carbs, fat')
+    .gte('log_date', startDate)
+    .lte('log_date', endDate)
+    .order('log_date')
+
+  if (error) return { data: null, error: error.message }
+
+  // Group by log_date and sum macros
+  const byDate = {}
+  for (const row of data) {
+    if (!byDate[row.log_date]) {
+      byDate[row.log_date] = {
+        log_date: row.log_date,
+        total_calories: 0,
+        total_protein: 0,
+        total_carbs: 0,
+        total_fat: 0,
+      }
+    }
+    byDate[row.log_date].total_calories += Number(row.calories)
+    byDate[row.log_date].total_protein  += Number(row.protein)
+    byDate[row.log_date].total_carbs    += Number(row.carbs)
+    byDate[row.log_date].total_fat      += Number(row.fat)
+  }
+
+  return { data: Object.values(byDate), error: null }
+}

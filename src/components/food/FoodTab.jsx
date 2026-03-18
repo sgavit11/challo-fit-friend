@@ -3,6 +3,7 @@ import { useRecipes } from '../../hooks/useRecipes'
 import RecipeLibrary from './RecipeLibrary'
 import RecipeBuilder from './RecipeBuilder'
 import DailyLogView from './DailyLogView'
+import AnalyticsView from './AnalyticsView'
 
 // Sub-nav tabs shown in the persistent header area
 const SUB_NAV_TABS = [
@@ -99,13 +100,7 @@ export default function FoodTab() {
         <RecipeLibrary onBuild={() => setView('builder')} />
       )}
 
-      {view === 'analytics' && (
-        <div className="empty-state">
-          <div className="empty-icon">📈</div>
-          <h2>Analytics</h2>
-          <p>Coming soon — macro trends and insights will live here.</p>
-        </div>
-      )}
+      {view === 'analytics' && <AnalyticsView />}
     </div>
   )
 }
