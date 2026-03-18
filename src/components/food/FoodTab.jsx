@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useRecipes } from '../../hooks/useRecipes'
 import RecipeLibrary from './RecipeLibrary'
 import RecipeBuilder from './RecipeBuilder'
+import DailyLogView from './DailyLogView'
 
 // Sub-nav tabs shown in the persistent header area
 const SUB_NAV_TABS = [
@@ -92,13 +93,7 @@ export default function FoodTab() {
 
       <SubNav active={view} onSelect={setView} />
 
-      {view === 'log' && (
-        <div className="empty-state">
-          <div className="empty-icon">📋</div>
-          <h2>Daily Log</h2>
-          <p>Coming soon — log your meals and track macros here.</p>
-        </div>
-      )}
+      {view === 'log' && <DailyLogView />}
 
       {view === 'recipes' && (
         <RecipeLibrary onBuild={() => setView('builder')} />
