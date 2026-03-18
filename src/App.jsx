@@ -25,6 +25,10 @@ export default function App() {
   const [tab, setTab] = useState('home')
   const [showSettings, setShowSettings] = useState(false)
 
+  // Auth gate — universal, shown before everything else
+  if (authLoading) return null
+  if (!session) return <AuthScreen />
+
   if (profiles.length === 0) {
     return (
       <OnboardingFlow
@@ -56,7 +60,7 @@ export default function App() {
   const screenProps = { profile: activeProfile, onOpenSettings: () => setShowSettings(true) }
   const SCREENS = {
     home: <HomeScreen {...screenProps} />,
-    food: !authLoading && !session ? <AuthScreen /> : <FoodTab />,
+    food: <FoodTab />,
     water: <WaterScreen {...screenProps} />,
     progress: <ProgressScreen {...screenProps} />,
     workout: <WorkoutScreen {...screenProps} />,
