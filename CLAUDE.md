@@ -8,12 +8,12 @@
 ## The Project
 - **Challo Fit Friend**: a fitness companion app
 - GitHub repo: `sgavit11/challo-fit-friend`
-- Netlify: connected to that repo, auto-deploys on push to `main`
-- **Push once per session** — accumulate all changes, then push at the end. Free tier = 300 build minutes/month (~2-3 min per build). Resets on the 1st of each month.
+- Vercel: connected to that repo, auto-deploys on push to `main`
+- **Push once per session** — accumulate all changes, then push at the end.
 
 ## Stack
-- React + Vite + Supabase (Postgres + Auth + Storage) + Netlify
-- Netlify: static hosting + serverless functions in `netlify/functions/`
+- React + Vite + Supabase (Postgres + Auth + Storage) + Vercel
+- Vercel: static hosting + serverless functions in `api/`
 - Build output: `dist/`
 - Recharts already in `package.json` — use for analytics charts
 - `@supabase/supabase-js` installed — client at `src/lib/supabase.js`
@@ -23,13 +23,9 @@
 - There is a stale copy of the app in the `challo-fit-friend/` subdirectory — ignore it
 - Always make changes at the repo root
 
-## Netlify Gotcha
-- `base = "challo-fit-friend"` was removed from `netlify.toml` on 2026-03-16
-- If Netlify ever stops reflecting changes, check the `netlify.toml` base setting first
-
 ## Env Vars
 - `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in `.env.local` (never committed)
-- Also set these in Netlify environment settings
+- Also set these in Vercel environment settings
 
 ## UI Design Tokens
 - Primary gradient: `#2DD4BF → #38BDF8` (glacier)
